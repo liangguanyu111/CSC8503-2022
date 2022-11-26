@@ -90,6 +90,17 @@ namespace NCL::CSC8503 {
 		{
 			return this->layer;
 		}
+
+		void Setelasticity(float elasticity)
+		{
+			this->elasticity = elasticity;
+		}
+
+		float Getelasticity()
+		{
+			return this->elasticity;
+		}
+
 	protected:
 		Transform			transform;
 
@@ -98,7 +109,7 @@ namespace NCL::CSC8503 {
 		RenderObject*		renderObject;
 		NetworkObject*		networkObject;
 		ObjectLayer  layer;
-
+		float elasticity;  //物体弹性
 
 		bool		isActive;
 		int			worldID;

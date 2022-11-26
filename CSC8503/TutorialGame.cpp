@@ -326,7 +326,6 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->InitCubeInertia();
 
-	cube->SetLayer(Cube);  //设置成Cube层
 
 	world->AddGameObject(cube);
 
@@ -480,7 +479,7 @@ bool TutorialGame::SelectObject() {
 			Debug::DrawLine(ray.GetPosition(), ray.GetPosition() + ray.GetDirection() * 100, Vector4(1, 1, 1, 1), 30.0f);
 
 			RayCollision closestCollision;
-			if (world->Raycast(ray, closestCollision, true, nullptr,Cube)) {
+			if (world->Raycast(ray, closestCollision, true)) {
 				selectionObject = (GameObject*)closestCollision.node;
 
 				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
@@ -530,6 +529,7 @@ void TutorialGame::MoveSelectedObject() {
 		if (world->Raycast(ray, closestCollision, true)) {
 			if (closestCollision.node == selectionObject) {
 				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt);
+				//selectionObject -> GetPhysicsObject() -> AddForce(ray.GetDirection() * forceMagnitude);
 			}
 		}
 	}
