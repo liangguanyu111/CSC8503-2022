@@ -100,8 +100,14 @@ namespace NCL::CSC8503 {
 		{
 			return this->elasticity;
 		}
+		void SetName(std::string name)
+		{
+			this->name = name;
+		}
 
-	protected:
+		
+
+protected:
 		Transform			transform;
 
 		CollisionVolume*	boundingVolume;
@@ -109,11 +115,11 @@ namespace NCL::CSC8503 {
 		RenderObject*		renderObject;
 		NetworkObject*		networkObject;
 		ObjectLayer  layer;
+		std::string name;
 		float elasticity;  //物体弹性
 
 		bool		isActive;
 		int			worldID;
-		std::string	name;
 
 		Vector3 broadphaseAABB;
 	};

@@ -9,6 +9,7 @@
 #include "Debug.h"
 #include "Window.h"
 #include <functional>
+
 using namespace NCL;
 using namespace CSC8503;
 
@@ -175,11 +176,15 @@ void PhysicsSystem::UpdateCollisionList() {
 }
 
 void PhysicsSystem::UpdateObjectAABBs() {
-	gameWorld.OperateOnContents(
-		[](GameObject* g) {
-			g->UpdateBroadphaseAABB();
-		}
-	);
+	std::vector < GameObject* >::const_iterator first;
+	std::vector < GameObject* >::const_iterator last;
+	gameWorld.GetObjectIterators(first, last);
+	for (auto i = first; i != last; ++i) 
+	{
+		(*i) -> UpdateBroadphaseAABB();
+		
+	}
+
 }
 
 /*
@@ -207,7 +212,6 @@ void PhysicsSystem::BasicCollisionDetection()
 			CollisionDetection::CollisionInfo info;
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) {
 				ImpulseResolveCollision(*info.a, *info.b, info.point);
-				std::cout << " Collision between " << (*i) -> GetName() << " and " << (*j) -> GetName() << std::endl;
 				info.framesLeft = numCollisionFrames;
 				//存储当前发生碰撞的物体
 				allCollisions.insert(info);
@@ -272,6 +276,33 @@ compare the collisions that we absolutely need to.
 
 */
 void PhysicsSystem::BroadPhase() {
+	broadphaseCollisions.clear();
+	QuadTree < GameObject* > tree(Vector2(1024, 1024), 7, 6);
+	std::vector < GameObject* >::const_iterator first;
+	std::vector < GameObject* >::const_iterator last;
+	gameWorld.GetObjectIterators(first, last);
+	for (auto i = first; i != last; ++i) {
+		Vector3 halfSizes;
+		if (!(*i)->GetBroadphaseAABB(halfSizes))
+		{
+			continue;
+		}
+		Vector3 pos = (*i)->GetTransform().GetPosition();
+		tree.Insert(*i, pos, halfSizes);
+	}
+
+	tree.OperateOnContents([&](std::list < QuadTreeEntry < GameObject* > >& data) {
+			CollisionDetection::CollisionInfo info;
+			for (auto i = data.begin(); i != data.end(); ++i) {
+				for (auto j = std::next(i); j != data.end(); ++j) {
+					// is this pair of items already in the collision set -
+					 // if the same pair is in another quadtree node together etc
+					 info.a = std::min((*i).object, (*j).object);
+					info.b = std::max((*i).object, (*j).object);
+					broadphaseCollisions.insert(info);
+				}
+			}
+			});
 
 }
 
@@ -280,8 +311,19 @@ void PhysicsSystem::BroadPhase() {
 The broadphase will now only give us likely collisions, so we can now go through them,
 and work out if they are truly colliding, and if so, add them into the main collision list
 */
-void PhysicsSystem::NarrowPhase() {
-
+void PhysicsSystem::NarrowPhase() 
+{
+	for (std::set < CollisionDetection::CollisionInfo >::iterator
+		i = broadphaseCollisions.begin();
+		i != broadphaseCollisions.end(); ++i) {
+		CollisionDetection::CollisionInfo info = *i;
+	    if (CollisionDetection::ObjectIntersection(info.a, info.b, info)) 
+		{
+			info.framesLeft = numCollisionFrames;
+			ImpulseResolveCollision(*info.a, *info.b, info.point);
+			allCollisions.insert(info); // insert into our main set
+		}
+	}
 }
 
 /*
@@ -305,13 +347,15 @@ void PhysicsSystem::IntegrateAccel(float dt) {
 		float inverseMass = object -> GetInverseMass();
 		Vector3 linearVel = object -> GetLinearVelocity();
 		Vector3 force = object -> GetForce();
+		if(inverseMass>0&&(force.x>0|| force.y > 0|| force.z > 0))
+		std::cout << (*i)->GetName() << "The Force is " <<force << std::endl;
 		Vector3 accel = force * inverseMass;
 		if (applyGravity && inverseMass > 0) {
+			//if(accel!=Vector3(0,0,0)&&(*i)->GetPhysicsObject()->GetLinearVelocity().y>0.2f)
 			accel += gravity; // don ’t move infinitely heavy things
 		}
 		linearVel += accel * dt; // integrate accel !
 		object -> SetLinearVelocity(linearVel);
-
 		// Angular stuff
 		Vector3 torque = object -> GetTorque();
 		Vector3 angVel = object -> GetAngularVelocity();
@@ -319,7 +363,6 @@ void PhysicsSystem::IntegrateAccel(float dt) {
 		Vector3 angAccel = object -> GetInertiaTensor() * torque;
 		angVel += angAccel * dt; // integrate angular accel !
 		object -> SetAngularVelocity(angVel);
-
 	}
 }
 
@@ -358,6 +401,7 @@ void PhysicsSystem::IntegrateVelocity(float dt) {
 		float frameAngularDamping = 1.0f - (0.4f * dt);
 		angVel = angVel * frameAngularDamping;
 		object -> SetAngularVelocity(angVel);
+
 
 	}
 }
