@@ -182,6 +182,10 @@ void PhysicsSystem::UpdateObjectAABBs() {
 	gameWorld.GetObjectIterators(first, last);
 	for (auto i = first; i != last; ++i) 
 	{
+		if (!(*i)->IsActive())
+		{
+			continue;
+		}
 		(*i) -> UpdateBroadphaseAABB();	
 	}
 }
@@ -201,7 +205,7 @@ void PhysicsSystem::BasicCollisionDetection()
 	std::vector < GameObject* >::const_iterator last;
 	gameWorld.GetObjectIterators(first, last);
 	for (auto i = first; i != last; ++i) {
-		if ((*i) -> GetPhysicsObject() == nullptr) {
+		if ((*i) -> GetPhysicsObject() == nullptr||!(*i)->IsActive()) {
 			continue;
 		}
 		for (auto j = i + 1; j != last; ++j) {
@@ -226,12 +230,13 @@ so that objects separate back out.
 
 */
 void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const {
+
 	PhysicsObject* physA = a.GetPhysicsObject();
 	PhysicsObject * physB = b.GetPhysicsObject();
 	Transform & transformA = a.GetTransform();
 	Transform & transformB = b.GetTransform();
 	float totalMass = physA -> GetInverseMass() + physB -> GetInverseMass();
-	if (totalMass == 0) 
+	if (totalMass == 0 ) 
 	{
 		 return; // two static objects ??
 	}
@@ -258,6 +263,10 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	float j = (-(1.0f + cRestitution) * impulseForce) /(totalMass + angularEffect);
 	Vector3 fullImpulse = p.normal * j;
 	
+	if (!a.IsActive() || !b.IsActive())
+	{
+		return;
+	}
 	//在这里乘物体的弹性
 	physA -> ApplyLinearImpulse(-fullImpulse);
 	physB -> ApplyLinearImpulse(fullImpulse);
@@ -282,7 +291,7 @@ void PhysicsSystem::BroadPhase() {
 	gameWorld.GetObjectIterators(first, last);
 	for (auto i = first; i != last; ++i) {
 		Vector3 halfSizes;
-		if (!(*i)->GetBroadphaseAABB(halfSizes))
+		if (!(*i)->GetBroadphaseAABB(halfSizes)|| !(*i)->IsActive())
 		{
 			continue;
 		}
@@ -312,9 +321,8 @@ and work out if they are truly colliding, and if so, add them into the main coll
 */
 void PhysicsSystem::NarrowPhase() 
 {
-	for (std::set < CollisionDetection::CollisionInfo >::iterator
-		i = broadphaseCollisions.begin();
-		i != broadphaseCollisions.end(); ++i) {
+	for (std::set < CollisionDetection::CollisionInfo >::iterator i = broadphaseCollisions.begin(); i != broadphaseCollisions.end();++i) 
+	{
 		CollisionDetection::CollisionInfo info = *i;
 	    if (CollisionDetection::ObjectIntersection(info.a, info.b, info)) 
 		{
@@ -341,7 +349,7 @@ void PhysicsSystem::IntegrateAccel(float dt) {
 	gameWorld.GetObjectIterators(first, last);
 	for (auto i = first; i != last; ++i) {
 		PhysicsObject * object = (*i) -> GetPhysicsObject();
-		if (object == nullptr||object->IsStatic()) {
+		if (object == nullptr||object->IsStatic()||!(*i)->IsActive()) {
 			continue; // No physics object for this GameObject !
 		}
 		float inverseMass = object -> GetInverseMass();
@@ -389,7 +397,7 @@ void PhysicsSystem::IntegrateVelocity(float dt) {
 	float frameLinearDamping = 1.0f - (0.4f * dt);
 	for (auto i = first; i != last; ++i) {
 		PhysicsObject * object = (*i) -> GetPhysicsObject();
-		if (object == nullptr || object->IsStatic()) {
+		if (object == nullptr || object->IsStatic()||!(*i)->IsActive()) {
 			continue;
 		}
 		Transform & transform = (*i) -> GetTransform();
@@ -445,4 +453,9 @@ void PhysicsSystem::UpdateConstraints(float dt) {
 	for (auto i = first; i != last; ++i) {
 		(*i)->UpdateConstraint(dt);
 	}
+}
+
+void PhysicsSystem::AwakeObject(GameObject obj) 
+{
+	
 }
