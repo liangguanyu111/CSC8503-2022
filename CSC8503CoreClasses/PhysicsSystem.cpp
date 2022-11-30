@@ -9,6 +9,7 @@
 #include "Debug.h"
 #include "Window.h"
 #include <functional>
+#include "Queue"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -181,10 +182,8 @@ void PhysicsSystem::UpdateObjectAABBs() {
 	gameWorld.GetObjectIterators(first, last);
 	for (auto i = first; i != last; ++i) 
 	{
-		(*i) -> UpdateBroadphaseAABB();
-		
+		(*i) -> UpdateBroadphaseAABB();	
 	}
-
 }
 
 /*
@@ -336,12 +335,13 @@ based on any forces that have been accumulated in the objects during
 the course of the previous game frame.
 */
 void PhysicsSystem::IntegrateAccel(float dt) {
+
 	std::vector < GameObject* >::const_iterator first;
 	std::vector < GameObject* >::const_iterator last;
 	gameWorld.GetObjectIterators(first, last);
 	for (auto i = first; i != last; ++i) {
 		PhysicsObject * object = (*i) -> GetPhysicsObject();
-		if (object == nullptr) {
+		if (object == nullptr||object->IsStatic()) {
 			continue; // No physics object for this GameObject !
 		}
 		float inverseMass = object -> GetInverseMass();
@@ -350,12 +350,22 @@ void PhysicsSystem::IntegrateAccel(float dt) {
 		if(inverseMass>0&&(force.x>0|| force.y > 0|| force.z > 0))
 		std::cout << (*i)->GetName() << "The Force is " <<force << std::endl;
 		Vector3 accel = force * inverseMass;
+
 		if (applyGravity && inverseMass > 0) {
 			//if(accel!=Vector3(0,0,0)&&(*i)->GetPhysicsObject()->GetLinearVelocity().y>0.2f)
 			accel += gravity; // don ’t move infinitely heavy things
 		}
+
 		linearVel += accel * dt; // integrate accel !
-		object -> SetLinearVelocity(linearVel);
+		object -> SetLinearVelocity(linearVel);		
+
+		if (applyGravity && inverseMass > 0) 
+		{
+			object->CheckObjectStatic((*i)->GetTransform().GetPosition(), linearVel);
+		}
+
+		//存储上一帧的位置和速度信息，用于确认物体是否处于static状态
+	
 		// Angular stuff
 		Vector3 torque = object -> GetTorque();
 		Vector3 angVel = object -> GetAngularVelocity();
@@ -379,7 +389,7 @@ void PhysicsSystem::IntegrateVelocity(float dt) {
 	float frameLinearDamping = 1.0f - (0.4f * dt);
 	for (auto i = first; i != last; ++i) {
 		PhysicsObject * object = (*i) -> GetPhysicsObject();
-		if (object == nullptr) {
+		if (object == nullptr || object->IsStatic()) {
 			continue;
 		}
 		Transform & transform = (*i) -> GetTransform();

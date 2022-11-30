@@ -316,9 +316,7 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	AABBVolume* volume = new AABBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 
-	cube->GetTransform()
-		.SetPosition(position)
-		.SetScale(dimensions * 2);
+	cube->GetTransform().SetPosition(position).SetScale(dimensions * 2);
 
 	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
@@ -440,6 +438,9 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 	*/
 	GameObject  *cube  = AddCubeToWorld(Vector3(0,0,0), cubeDims);
 	cube->SetName("Cube");
+	GameObject* cube2 = AddCubeToWorld(Vector3(1, 0, 0), cubeDims);
+	GameObject* cube3 = AddCubeToWorld(Vector3(0, 0, 1), cubeDims);
+	GameObject* cube4 = AddCubeToWorld(Vector3(1, 0, 1), cubeDims);
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims) {
@@ -536,6 +537,11 @@ void TutorialGame::MoveSelectedObject() {
 				//selectionObject -> GetPhysicsObject() -> AddForce(ray.GetDirection() * forceMagnitude);
 			}
 		}
+	}
+
+	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::M)&&selectionObject)
+	{
+		selectionObject->SetActive(false);
 	}
 }
 

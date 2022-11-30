@@ -11,6 +11,9 @@ PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* 
 	inverseMass = 1.0f;
 	elasticity	= 0.8f;
 	friction	= 0.8f;
+
+
+	isStatic = false;
 }
 
 PhysicsObject::~PhysicsObject()	{
@@ -18,18 +21,22 @@ PhysicsObject::~PhysicsObject()	{
 }
 
 void PhysicsObject::ApplyAngularImpulse(const Vector3& force) {
+	isStatic = false;
 	angularVelocity += inverseInteriaTensor * force;
 }
 
 void PhysicsObject::ApplyLinearImpulse(const Vector3& force) {
+	isStatic = false;
 	linearVelocity += force * inverseMass;
 }
 
 void PhysicsObject::AddForce(const Vector3& addedForce) {
+	isStatic = false;
 	force += addedForce;
 }
 
 void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3& position) {
+	isStatic = false;
 	Vector3 localPos = position - transform->GetPosition();
 
 	force  += addedForce;
@@ -37,6 +44,7 @@ void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3&
 }
 
 void PhysicsObject::AddTorque(const Vector3& addedTorque) {
+	isStatic = false;
 	torque += addedTorque;
 }
 
@@ -71,4 +79,50 @@ void PhysicsObject::UpdateInertiaTensor() {
 	Matrix3 orientation		= Matrix3(q);
 
 	inverseInteriaTensor = orientation * Matrix3::Scale(inverseInertia) *invOrientation;
+}
+
+
+//待优化
+void PhysicsObject::CheckObjectStatic(Vector3 pos, Vector3 velocity)
+{
+	if (latestPoss.size() == 0&& latestVelocitys.size()==0)
+	{
+		lastFramePos = this->transform->GetPosition();
+		lastFrameVelocity = this->GetLinearVelocity();
+	}
+
+	if (latestPoss.size() < 6 || latestVelocitys.size() < 6)
+	{
+		latestPoss.push(pos-lastFramePos);
+		latestVelocitys.push(velocity-lastFrameVelocity);
+		return;
+	}
+	Vector3 posOffset(0, 0, 0);
+	Vector3 velocitysOffset(0, 0, 0);
+	latestPoss.pop();
+	latestPoss.push(pos-lastFramePos);
+	latestVelocitys.pop();
+	latestVelocitys.push(velocity-lastFrameVelocity);
+
+	for (int i = 0; i < latestPoss.size(); i++)
+	{
+		posOffset += latestPoss.front();
+		latestPoss.push(latestPoss.front());
+		latestPoss.pop();
+	}
+	
+	for (int i = 0; i < latestVelocitys.size(); i++)
+	{
+		velocitysOffset += latestVelocitys.front();
+		latestVelocitys.push(latestVelocitys.front());
+		latestVelocitys.pop();
+	}
+	lastFramePos = pos;
+	lastFrameVelocity = velocity;
+
+	//?5
+	if (posOffset.y >= -0.003&& posOffset.y <= -0.002&& lastFrameVelocity.y>=0)
+	{
+		isStatic = true;
+	}
 }

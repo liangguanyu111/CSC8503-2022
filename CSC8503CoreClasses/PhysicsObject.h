@@ -1,5 +1,8 @@
 #pragma once
+#include <queue>
+
 using namespace NCL::Maths;
+
 
 namespace NCL {
 	class CollisionVolume;
@@ -36,6 +39,7 @@ namespace NCL {
 				return inverseMass;
 			}
 
+
 			void ApplyAngularImpulse(const Vector3& force);
 			void ApplyLinearImpulse(const Vector3& force);
 			
@@ -65,6 +69,15 @@ namespace NCL {
 				return inverseInteriaTensor;
 			}
 
+			bool IsStatic()
+			{
+				return isStatic;
+			}
+
+			void CheckObjectStatic(Vector3 pos, Vector3 velocity);
+
+
+
 		protected:
 			const CollisionVolume* volume;
 			Transform*		transform;
@@ -82,6 +95,16 @@ namespace NCL {
 			Vector3 torque;
 			Vector3 inverseInertia;
 			Matrix3 inverseInteriaTensor;
+
+
+			Vector3 lastFramePos;
+			Vector3 lastFrameVelocity;
+
+			//大小为六的数组用来检测六帧内物体位置是否发生变化
+			std::queue<Vector3> latestPoss;
+			std::queue<Vector3> latestVelocitys;
+			//静态检测
+			bool isStatic;
 		};
 	}
 }

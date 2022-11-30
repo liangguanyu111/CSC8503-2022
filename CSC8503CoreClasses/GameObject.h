@@ -105,6 +105,10 @@ namespace NCL::CSC8503 {
 			this->name = name;
 		}
 
+		void SetActive(bool active)
+		{
+			isActive = active;
+		}
 		
 
 protected:
