@@ -91,15 +91,6 @@ namespace NCL::CSC8503 {
 			return this->layer;
 		}
 
-		void Setelasticity(float elasticity)
-		{
-			this->elasticity = elasticity;
-		}
-
-		float Getelasticity()
-		{
-			return this->elasticity;
-		}
 		void SetName(std::string name)
 		{
 			this->name = name;
@@ -120,7 +111,6 @@ protected:
 		NetworkObject*		networkObject;
 		ObjectLayer  layer;
 		std::string name;
-		float elasticity;  //物体弹性
 
 		bool		isActive;
 		int			worldID;

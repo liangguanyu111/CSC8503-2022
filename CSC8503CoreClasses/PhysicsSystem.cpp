@@ -266,6 +266,28 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 
 }
 
+void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
+{
+	PhysicsObject* physA = a.GetPhysicsObject();
+	PhysicsObject* physB = b.GetPhysicsObject();
+
+	Transform& transformA = a.GetTransform();
+	Transform& transformB = b.GetTransform();
+	float totalMass = physA->GetInverseMass() + physB->GetInverseMass();
+	if (totalMass == 0)
+	{
+		return; // two static objects ??
+	}
+	//是否应该分开两个物体？
+
+	transformA.SetPosition(transformA.GetPosition() - (p.normal * p.penetration * (physA->GetInverseMass() / totalMass)));
+	transformB.SetPosition(transformB.GetPosition() + (p.normal * p.penetration * (physB->GetInverseMass() / totalMass)));
+
+	float forceA = p.penetration * physA->Getelasticity();
+	float forceB = p.penetration * physB->Getelasticity();
+
+
+}
 /*
 
 Later, we replace the BasicCollisionDetection method with a broadphase
