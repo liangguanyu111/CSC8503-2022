@@ -288,6 +288,7 @@ bool CollisionDetection::SphereIntersection(const SphereVolume& volumeA, const T
 //AABB - Sphere Collision
 bool CollisionDetection::AABBSphereIntersection(const AABBVolume& volumeA, const Transform& worldTransformA,
 	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+
 	Vector3 boxSize = volumeA.GetHalfDimensions();
 	Vector3 delta = worldTransformB.GetPosition() - worldTransformA.GetPosition();
 	Vector3 closestPointOnBox = Maths::Clamp(delta, -boxSize, boxSize);
@@ -304,7 +305,6 @@ bool CollisionDetection::AABBSphereIntersection(const AABBVolume& volumeA, const
 		return true;
 	}
 	return false;
-
 }
 
 bool  CollisionDetection::OBBSphereIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
@@ -326,11 +326,22 @@ bool CollisionDetection::SphereCapsuleIntersection(
 
 
 
-bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
-	const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
-
+bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) 
+{
+	
 	return false;
 }
+
+Vector3 CollisionDetection::OBBSupport(const Transform& worldTransform, Vector3 worldDir)
+{
+	Vector3 localDir = worldTransform.GetOrientation().Conjugate() * worldDir;
+	Vector3 vertex;
+	vertex.x = localDir.x < 0 ? -0.5f : 0.5f;
+	vertex.y = localDir.y < 0 ? -0.5f : 0.5f;
+	vertex.z = localDir.z < 0 ? -0.5f : 0.5f;
+	return worldTransform.GetMatrix() * vertex;
+}
+
 
 Matrix4 GenerateInverseView(const Camera &c) {
 	float pitch = c.GetPitch();
