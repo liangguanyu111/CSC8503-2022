@@ -70,6 +70,16 @@ namespace NCL {
 				return elasticity;
 			}
 
+			void SetSpringCoefficient(const float& sc)
+			{
+				springCoefficient = sc;
+			}
+
+			float GetSpringCoefficient()
+			{
+				return springCoefficient;
+			}
+
 			void InitCubeInertia();
 			void InitSphereInertia();
 
@@ -84,16 +94,14 @@ namespace NCL {
 				return isStatic;
 			}
 
-			void CheckObjectStatic(Vector3 pos, Vector3 velocity);
-
-
 
 		protected:
 			const CollisionVolume* volume;
 			Transform*		transform;
 
 			float inverseMass;
-			float elasticity; //弹性系数，弹簧指数
+			float elasticity; //弹性系数
+			float springCoefficient;
 			float friction;
 
 			//linear stuff
@@ -106,13 +114,6 @@ namespace NCL {
 			Vector3 inverseInertia;
 			Matrix3 inverseInteriaTensor;
 
-
-			Vector3 lastFramePos;
-			Vector3 lastFrameVelocity;
-
-			//大小为六的数组用来检测六帧内物体位置是否发生变化
-			std::queue<Vector3> latestPoss;
-			std::queue<Vector3> latestVelocitys;
 			//静态检测
 			bool isStatic;
 		};

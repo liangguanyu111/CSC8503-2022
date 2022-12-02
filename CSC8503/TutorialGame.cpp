@@ -437,10 +437,8 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 	}
 	*/
 	GameObject  *cube  = AddCubeToWorld(Vector3(0,0,0), cubeDims);
+	GameObject* cube4 = AddCubeToWorld(Vector3(0, -1, 0), cubeDims);
 	cube->SetName("Cube");
-	GameObject* cube2 = AddCubeToWorld(Vector3(1, 0, 0), cubeDims);
-	GameObject* cube3 = AddCubeToWorld(Vector3(0, 0, 1), cubeDims);
-	GameObject* cube4 = AddCubeToWorld(Vector3(1, 0, 1), cubeDims);
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims) {
