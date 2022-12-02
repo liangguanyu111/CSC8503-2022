@@ -15,6 +15,7 @@ GameObject::GameObject(string objectName)	{
 	renderObject	= nullptr;
 	networkObject	= nullptr;
 	layer = Default;
+	isActive = true;
 }
 
 GameObject::~GameObject()	{

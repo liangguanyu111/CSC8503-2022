@@ -33,6 +33,8 @@ namespace NCL {
 
 			void UpdateConstraints(float dt);
 
+			void AwakeObject(GameObject dt);
+
 			void UpdateCollisionList();
 			void UpdateObjectAABBs();
 
