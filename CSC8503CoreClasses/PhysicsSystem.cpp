@@ -214,7 +214,7 @@ void PhysicsSystem::BasicCollisionDetection()
 			}
 			CollisionDetection::CollisionInfo info;
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) {
-				ResolveSpringCollision(*info.a, *info.b, info.point);
+				ImpulseResolveCollision(*info.a, *info.b, info.point);
 				info.framesLeft = numCollisionFrames;
 				//存储当前发生碰撞的物体
 				allCollisions.insert(info);
@@ -283,7 +283,6 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	Transform& transformA = a.GetTransform();
 	Transform& transformB = b.GetTransform();
 	float totalMass = physA->GetInverseMass() + physB->GetInverseMass();
-
 	if (totalMass == 0)
 	{
 		return; // two static objects ??
@@ -293,12 +292,9 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	transformA.SetPosition(transformA.GetPosition() - (p.normal * p.penetration * (physA->GetInverseMass() / totalMass)));
 	transformB.SetPosition(transformB.GetPosition() + (p.normal * p.penetration * (physB->GetInverseMass() / totalMass)));
 
-	float force = p.penetration * ((physA->GetSpringCoefficient()+ physB->GetSpringCoefficient())/2);
+	float forceA = p.penetration * physA->Getelasticity();
+	float forceB = p.penetration * physB->Getelasticity();
 
-	float cRestitution = 0.66f * ((physA->Getelasticity() + physB->Getelasticity()) / 2); ; // disperse some kinectic energy 
-	
-	physA->AddForceAtPosition(-p.normal * force * cRestitution, p.localA);
-	physB->AddForceAtPosition(p.normal * force * cRestitution, p.localB);
 
 }
 /*
@@ -375,12 +371,14 @@ void PhysicsSystem::IntegrateAccel(float dt) {
 	gameWorld.GetObjectIterators(first, last);
 	for (auto i = first; i != last; ++i) {
 		PhysicsObject * object = (*i) -> GetPhysicsObject();
-		if (object == nullptr||!(*i)->IsActive()) {
+		if (object == nullptr||object->IsStatic()||!(*i)->IsActive()) {
 			continue; // No physics object for this GameObject !
 		}
 		float inverseMass = object -> GetInverseMass();
 		Vector3 linearVel = object -> GetLinearVelocity();
 		Vector3 force = object -> GetForce();
+		if(inverseMass>0&&(force.x>0|| force.y > 0|| force.z > 0))
+		std::cout << (*i)->GetName() << "The Force is " <<force << std::endl;
 		Vector3 accel = force * inverseMass;
 
 		if (applyGravity && inverseMass > 0) {
@@ -391,6 +389,10 @@ void PhysicsSystem::IntegrateAccel(float dt) {
 		linearVel += accel * dt; // integrate accel !
 		object -> SetLinearVelocity(linearVel);		
 
+		if (applyGravity && inverseMass > 0) 
+		{
+			object->CheckObjectStatic((*i)->GetTransform().GetPosition(), linearVel);
+		}
 
 		//存储上一帧的位置和速度信息，用于确认物体是否处于static状态
 	
@@ -417,7 +419,7 @@ void PhysicsSystem::IntegrateVelocity(float dt) {
 	float frameLinearDamping = 1.0f - (0.4f * dt);
 	for (auto i = first; i != last; ++i) {
 		PhysicsObject * object = (*i) -> GetPhysicsObject();
-		if (object == nullptr ||!(*i)->IsActive()) {
+		if (object == nullptr || object->IsStatic()||!(*i)->IsActive()) {
 			continue;
 		}
 		Transform & transform = (*i) -> GetTransform();
