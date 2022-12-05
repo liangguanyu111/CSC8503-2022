@@ -328,7 +328,9 @@ bool CollisionDetection::SphereCapsuleIntersection(
 
 bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) 
 {
-	
+	Vector3 a = OBBSupport(worldTransformA, Vector3(0, 1, 0));
+	Vector3 b = OBBSupport(worldTransformA, Vector3(0, 1, 0));
+
 	return false;
 }
 

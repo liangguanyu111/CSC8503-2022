@@ -128,6 +128,7 @@ void TutorialGame::UpdateGame(float dt) {
 
 	renderer->Render();
 	Debug::UpdateRenderables(dt);
+
 }
 
 void TutorialGame::UpdateKeys() {
@@ -253,6 +254,7 @@ void TutorialGame::InitWorld() {
 
 	//InitGameExamples();
 	InitDefaultFloor();
+	testStateObject = AddStateObjectToWorld(Vector3(0, 5, 0));
 }
 
 /*
@@ -314,6 +316,26 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	GameObject* cube = new GameObject();
 
 	AABBVolume* volume = new AABBVolume(dimensions);
+	cube->SetBoundingVolume((CollisionVolume*)volume);
+
+	cube->GetTransform().SetPosition(position).SetScale(dimensions * 2);
+
+	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+
+	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
+	cube->GetPhysicsObject()->InitCubeInertia();
+
+
+	world->AddGameObject(cube);
+
+	return cube;
+}
+
+GameObject* TutorialGame::AddOBBCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass) {
+	GameObject* cube = new GameObject();
+
+	OBBVolume* volume = new OBBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 
 	cube->GetTransform().SetPosition(position).SetScale(dimensions * 2);
@@ -398,6 +420,31 @@ GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
 	return apple;
 }
 
+StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3& position)
+{
+	float meshSize = 3.0f;
+	float inverseMass = 0.5f;
+
+	StateGameObject* character = new StateGameObject();
+
+	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
+	character->SetBoundingVolume((CollisionVolume*)volume);
+
+	character->GetTransform()
+		.SetScale(Vector3(meshSize, meshSize, meshSize))
+		.SetPosition(position);
+
+	character->SetRenderObject(new RenderObject(&character->GetTransform(), enemyMesh, nullptr, basicShader));
+	character->SetPhysicsObject(new PhysicsObject(&character->GetTransform(), character->GetBoundingVolume()));
+
+	character->GetPhysicsObject()->SetInverseMass(inverseMass);
+	character->GetPhysicsObject()->InitSphereInertia();
+
+	world->AddGameObject(character);
+
+	return character;
+}
+
 void TutorialGame::InitDefaultFloor() {
 	AddFloorToWorld(Vector3(0, -20, 0));
 }
@@ -436,8 +483,8 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 		}
 	}
 	*/
-	GameObject  *cube  = AddCubeToWorld(Vector3(0,0,0), cubeDims);
-	GameObject* cube4 = AddCubeToWorld(Vector3(0, -1, 0), cubeDims);
+	GameObject  *cube  = AddOBBCubeToWorld(Vector3(0,0,0), cubeDims);
+	GameObject* cube4 = AddOBBCubeToWorld(Vector3(0, -1, 0), cubeDims);
 	cube->SetName("Cube");
 }
 

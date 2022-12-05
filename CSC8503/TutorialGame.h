@@ -46,9 +46,12 @@ namespace NCL {
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f);
 
+			GameObject* AddOBBCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f);
+
 			GameObject* AddPlayerToWorld(const Vector3& position);
 			GameObject* AddEnemyToWorld(const Vector3& position);
 			GameObject* AddBonusToWorld(const Vector3& position);
+			StateGameObject* AddStateObjectToWorld(const Vector3& position);
 
 			void BridgeConstraintTest();
 
@@ -82,6 +85,10 @@ namespace NCL {
 			//Coursework Additional functionality	
 			GameObject* lockedObject	= nullptr;
 			Vector3 lockedOffset		= Vector3(0, 14, 20);
+
+			StateGameObject* testStateObject;
+
+
 			void LockCameraToObject(GameObject* o) {
 				lockedObject = o;
 			}

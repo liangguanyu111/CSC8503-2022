@@ -8,8 +8,9 @@ namespace NCL {
         public:
             StateGameObject();
             ~StateGameObject();
+            
+            void Update(float dt);
 
-            virtual void Update(float dt);
 
         protected:
             void MoveLeft(float dt);

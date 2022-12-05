@@ -23,11 +23,6 @@ NavigationGrid::NavigationGrid()	{
 
 NavigationGrid::NavigationGrid(const std::string&filename) : NavigationGrid() {
 
-	std::ofstream f(Assets::DATADIR + filename);
-	f << "hello!" << std::endl;
-	f.close();
-
-
 
 	std::ifstream infile(Assets::DATADIR + filename);
 
@@ -157,8 +152,10 @@ bool NavigationGrid::FindPath(const Vector3& from, const Vector3& to, Navigation
 	return false; //open list emptied out with no path!
 }
 
-bool NavigationGrid::NodeInList(GridNode* n, std::vector<GridNode*>& list) const {
+bool NavigationGrid::NodeInList(GridNode* n, std::vector<GridNode*>& list) const 
+{
 	std::vector<GridNode*>::iterator i = std::find(list.begin(), list.end(), n);
+
 	return i == list.end() ? false : true;
 }
 
