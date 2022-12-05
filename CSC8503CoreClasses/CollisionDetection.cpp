@@ -328,8 +328,56 @@ bool CollisionDetection::SphereCapsuleIntersection(
 
 bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) 
 {
-	Vector3 a = OBBSupport(worldTransformA, Vector3(0, 1, 0));
-	Vector3 b = OBBSupport(worldTransformA, Vector3(0, 1, 0));
+	std::vector<Vector3>aixs;
+
+	Vector3 VAx = worldTransformA.GetMatrix() * Vector3(1, 0, 0);
+	Vector3 VAy = worldTransformA.GetMatrix() * Vector3(0, 1, 0);
+	Vector3 VAz = worldTransformA.GetMatrix() * Vector3(0, 0, 1);
+	
+	aixs.push_back(VAx);
+	aixs.push_back(VAy);
+	aixs.push_back(VAz);
+
+	Vector3 VBx = worldTransformB.GetMatrix() * Vector3(1, 0, 0);
+	Vector3 VBy = worldTransformB.GetMatrix() * Vector3(0, 1, 0);
+	Vector3 VBz = worldTransformB.GetMatrix() * Vector3(0, 0, 1);
+	aixs.push_back(VBx);
+	aixs.push_back(VBy);
+	aixs.push_back(VBz);
+
+	Vector3 centerA = worldTransformA.GetPosition();
+	Vector3 volumeASize = volumeA.GetHalfDimensions();
+
+	Vector3 centerB = worldTransformB.GetPosition();
+	Vector3 volumeBSize = volumeB.GetHalfDimensions();
+
+	aixs.push_back(Vector3::Cross(VAx, VBx));
+	aixs.push_back(Vector3::Cross(VAx, VBy));
+	aixs.push_back(Vector3::Cross(VAx, VBz));
+	aixs.push_back(Vector3::Cross(VAy, VBx));
+	aixs.push_back(Vector3::Cross(VAy, VBy));
+	aixs.push_back(Vector3::Cross(VAy, VBz));
+	aixs.push_back(Vector3::Cross(VAz, VBx));
+	aixs.push_back(Vector3::Cross(VAz, VBy));
+	aixs.push_back(Vector3::Cross(VAz, VBz));
+
+
+	for (vector<Vector3>::iterator  it = aixs.begin();it != aixs.end();it++)
+	{
+		 Vector3 MaxA = OBBSupport(worldTransformA, (*it));
+		 Vector3 MinA = OBBSupport(worldTransformA, -(*it));
+
+	
+		 Vector3 MaxB = OBBSupport(worldTransformB, (*it));
+		 Vector3 MinB = OBBSupport(worldTransformB, -(*it));
+
+
+		 float A = Vector3::Dot(MaxA, (*it));
+		 float A2 = Vector3::Dot(MinA, (*it));
+		 float B = Vector3::Dot(MaxB, (*it));
+		 float B2 = Vector3::Dot(MinB, (*it));
+	}
+
 
 	return false;
 }
@@ -341,7 +389,9 @@ Vector3 CollisionDetection::OBBSupport(const Transform& worldTransform, Vector3 
 	vertex.x = localDir.x < 0 ? -0.5f : 0.5f;
 	vertex.y = localDir.y < 0 ? -0.5f : 0.5f;
 	vertex.z = localDir.z < 0 ? -0.5f : 0.5f;
+
 	return worldTransform.GetMatrix() * vertex;
+
 }
 
 

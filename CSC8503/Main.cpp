@@ -24,12 +24,16 @@
 #include "BehaviourSequence.h"
 #include "BehaviourAction.h"
 
+#include "IntroScreen.h"
+
 using namespace NCL;
 using namespace CSC8503;
 
 #include <chrono>
 #include <thread>
 #include <sstream>
+
+
 
 vector < Vector3 > testNodes;
 
@@ -53,6 +57,16 @@ void DisplayPathfinding()
 		Vector3 a = testNodes[i - 1];
 		Vector3 b = testNodes[i];
 		Debug::DrawLine(a, b, Vector4(0, 1, 0, 1));
+	}
+}
+
+void TestPushdownAutomata(Window* w) {
+	PushdownMachine machine(new IntroScreen());
+	while (w -> UpdateWindow()) {
+		float dt = w -> GetTimer() -> GetTimeDeltaSeconds();
+		if (!machine.Update(dt)) {
+			return;
+		}
 	}
 }
 
@@ -102,6 +116,8 @@ int main() {
 		g->UpdateGame(dt);
 		TestPathfinding();
 		DisplayPathfinding();
+
+		//TestPushdownAutomata(w);
 	}
 	Window::DestroyGameWindow();
 }
