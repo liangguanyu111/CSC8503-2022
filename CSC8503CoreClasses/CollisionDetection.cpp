@@ -396,7 +396,11 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 	}
 	if (min_pos <= 6)
 	{
-		std::cout << "Point to SomeThing Collied" << std::endl;
+		
+	}
+	else
+	{
+		std::cout << "edge to SomeThing Collied" << std::endl;
 	}
 
 	
