@@ -83,8 +83,8 @@ void TutorialGame::UpdateGame(float dt) {
 		Vector3 angles = q.ToEuler(); //nearly there now!
 
 		world->GetMainCamera()->SetPosition(camPos);
-		world->GetMainCamera()->SetPitch(angles.x);
-		world->GetMainCamera()->SetYaw(angles.y);
+		//world->GetMainCamera()->SetPitch(angles.x);
+		//world->GetMainCamera()->SetYaw(angles.y);
 	}
 
 	UpdateKeys();
@@ -446,7 +446,7 @@ StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3
 }
 
 void TutorialGame::InitDefaultFloor() {
-	AddFloorToWorld(Vector3(0, -20, 0));
+	AddFloorToWorld(Vector3(0, -2, 0));
 }
 
 void TutorialGame::InitGameExamples() {
@@ -483,8 +483,9 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 		}
 	}
 	*/
-	GameObject  *cube  = AddOBBCubeToWorld(Vector3(0,0,0), cubeDims);
-	GameObject* cube4 = AddOBBCubeToWorld(Vector3(0, -1, 0), cubeDims);
+	GameObject  *cube  = AddOBBCubeToWorld(Vector3(0,2,0), cubeDims);
+	GameObject* cube4 = AddOBBCubeToWorld(Vector3(2, 2, 2), cubeDims);
+	GameObject* player = AddPlayerToWorld(Vector3(3, 1, 0));
 	cube->SetName("Cube");
 }
 

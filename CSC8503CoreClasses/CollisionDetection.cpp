@@ -326,14 +326,14 @@ bool CollisionDetection::SphereCapsuleIntersection(
 
 
 
-bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) 
+bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA, const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
 {
 	std::vector<Vector3>aixs;
 
 	Vector3 VAx = worldTransformA.GetMatrix() * Vector3(1, 0, 0);
 	Vector3 VAy = worldTransformA.GetMatrix() * Vector3(0, 1, 0);
 	Vector3 VAz = worldTransformA.GetMatrix() * Vector3(0, 0, 1);
-	
+
 	aixs.push_back(VAx);
 	aixs.push_back(VAy);
 	aixs.push_back(VAz);
@@ -361,25 +361,47 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 	aixs.push_back(Vector3::Cross(VAz, VBy));
 	aixs.push_back(Vector3::Cross(VAz, VBz));
 
+	float minPenetration =0.0f;
+	int couter = 1;
+	int min_pos = 0;
 
-	for (vector<Vector3>::iterator  it = aixs.begin();it != aixs.end();it++)
+	for (vector<Vector3>::iterator it = aixs.begin(); it != aixs.end(); it++)
 	{
-		 Vector3 MaxA = OBBSupport(worldTransformA, (*it));
-		 Vector3 MinA = OBBSupport(worldTransformA, -(*it));
 
-	
-		 Vector3 MaxB = OBBSupport(worldTransformB, (*it));
-		 Vector3 MinB = OBBSupport(worldTransformB, -(*it));
+		Vector3 MaxA = OBBSupport(worldTransformA, (*it));
+		Vector3 MinA = OBBSupport(worldTransformA, -(*it));
 
 
-		 float A = Vector3::Dot(MaxA, (*it));
-		 float A2 = Vector3::Dot(MinA, (*it));
-		 float B = Vector3::Dot(MaxB, (*it));
-		 float B2 = Vector3::Dot(MinB, (*it));
+		Vector3 MaxB = OBBSupport(worldTransformB, (*it));
+		Vector3 MinB = OBBSupport(worldTransformB, -(*it));
+
+
+		float A = Vector3::Dot(MaxA, (*it));
+		float A2 = Vector3::Dot(MinA, (*it));
+		float B = Vector3::Dot(MaxB, (*it));
+		float B2 = Vector3::Dot(MinB, (*it));
+
+		if (B2 > A || B < A2)
+		{
+			std::cout << "OBB not Collied" << std::endl;
+			return false;
+		}
+
+		if (minPenetration <=0 || minPenetration > (A - A2) + (B - B2) - abs(B - A2))
+		{
+			minPenetration = (A - A2) + (B - B2) - abs(B - A2);
+			min_pos = couter;
+		}
+		couter += 1;
+	}
+	if (min_pos <= 6)
+	{
+		std::cout << "Point to SomeThing Collied" << std::endl;
 	}
 
+	
 
-	return false;
+	return true;
 }
 
 Vector3 CollisionDetection::OBBSupport(const Transform& worldTransform, Vector3 worldDir)

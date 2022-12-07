@@ -45,6 +45,7 @@ void TestPathfinding() {
 	Vector3 endPos(80, 0, 80);
 	bool found = grid.FindPath(startPos, endPos, outPath);
 	Vector3 pos;
+	testNodes.clear();
 	while (outPath.PopWaypoint(pos))
 	{
 		testNodes.push_back(pos);
