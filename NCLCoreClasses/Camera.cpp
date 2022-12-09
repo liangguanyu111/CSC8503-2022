@@ -11,19 +11,32 @@ last frame (default value is for simplicities sake...)
 */
 void Camera::UpdateCamera(float dt) {
 	//Update the mouse by how much
-	pitch	-= (Window::GetMouse()->GetRelativePosition().y);
-	yaw		-= (Window::GetMouse()->GetRelativePosition().x);
+	pitch -= (Window::GetMouse()->GetRelativePosition().y);
+	yaw -= (Window::GetMouse()->GetRelativePosition().x);
 
 	//Bounds check the pitch, to be between straight up and straight down ;)
 	pitch = std::min(pitch, 90.0f);
 	pitch = std::max(pitch, -90.0f);
 
-	if (yaw <0) {
+	if (yaw < 0) {
 		yaw += 360.0f;
 	}
 	if (yaw > 360.0f) {
 		yaw -= 360.0f;
 	}
+
+	double pi = 3.14159265359;
+	forward.z =  -cos(yaw * (pi / 180)) * cos(pitch * (pi / 180));
+	forward.y = sin(pitch * (pi / 180));
+	forward.x =  -sin(yaw * (pi / 180)) * cos(pitch * (pi / 180));
+	forward = forward.Normalised();
+	
+
+	if (targetPosition!=Vector3(0,0,0))
+	{
+		position = targetPosition - forward * Vector3::Distance(position, targetPosition);
+	}
+
 
 	float frameSpeed = 100 * dt;
 
@@ -56,9 +69,9 @@ straight to the shader...it's already an 'inverse camera' matrix.
 Matrix4 Camera::BuildViewMatrix() const {
 	//Why do a complicated matrix inversion, when we can just generate the matrix
 	//using the negative values ;). The matrix multiplication order is important!
-	return	Matrix4::Rotation(-pitch, Vector3(1, 0, 0)) *
-		Matrix4::Rotation(-yaw, Vector3(0, 1, 0)) *
-		Matrix4::Translation(-position);
+	return Matrix4::Rotation(-pitch, Vector3(1, 0, 0)) *
+		   Matrix4::Rotation(-yaw, Vector3(0, 1, 0)) *
+		   Matrix4::Translation(-position);
 };
 
 Matrix4 Camera::BuildProjectionMatrix(float currentAspect) const {

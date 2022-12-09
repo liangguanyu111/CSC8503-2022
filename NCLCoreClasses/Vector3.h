@@ -92,6 +92,11 @@ namespace NCL::Maths {
 			return Vector3((a.y*b.z) - (a.z*b.y), (a.z*b.x) - (a.x*b.z), (a.x*b.y) - (a.y*b.x));
 		}
 
+		static float Distance(const Vector3& a, const Vector3& b) {
+			return sqrt(pow((a.x-b.x),2) + pow((a.y - b.y), 2) + pow((a.z - b.z), 2));
+		}
+
+
 		inline Vector3  operator+(const Vector3  &a) const {
 			return Vector3(x + a.x, y + a.y, z + a.z);
 		}

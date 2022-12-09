@@ -82,7 +82,7 @@ void TutorialGame::UpdateGame(float dt) {
 		Quaternion q(modelMat);
 		Vector3 angles = q.ToEuler(); //nearly there now!
 
-		world->GetMainCamera()->SetPosition(camPos);
+		//world->GetMainCamera()->SetPosition(camPos);
 		//world->GetMainCamera()->SetPitch(angles.x);
 		//world->GetMainCamera()->SetYaw(angles.y);
 	}
@@ -192,6 +192,14 @@ void TutorialGame::LockedObjectMovement() {
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
 		selectionObject->GetPhysicsObject()->AddForce(-fwdAxis);
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
+		selectionObject->GetPhysicsObject()->AddForce(rightAxis);
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
+		selectionObject->GetPhysicsObject()->AddForce(-rightAxis);
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NEXT)) {
@@ -484,7 +492,7 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 	}
 	*/
 	GameObject  *cube  = AddOBBCubeToWorld(Vector3(0,2,0), cubeDims);
-	GameObject* cube4 = AddOBBCubeToWorld(Vector3(2, 2, 2), cubeDims);
+	GameObject* cube4 = AddOBBCubeToWorld(Vector3(3, 2, 3), cubeDims);
 	GameObject* player = AddPlayerToWorld(Vector3(3, 1, 0));
 	cube->SetName("Cube");
 }
@@ -547,6 +555,7 @@ bool TutorialGame::SelectObject() {
 					lockedObject = nullptr;
 				}
 				else {
+					world->GetMainCamera()->SetTargetPosition(selectionObject->GetTransform().GetPosition());
 					lockedObject = selectionObject;
 				}
 			}

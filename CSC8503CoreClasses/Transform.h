@@ -29,8 +29,23 @@ namespace NCL {
 			}
 
 			Matrix4 GetMatrix() const {
-				return matrix;
+				if (parent != nullptr)
+				{
+					return matrix * parent->GetMatrix();
+				}
+				else
+				{
+					return matrix;
+				}
 			}
+
+			void SetParent(Transform* parent)
+			{
+				this->parent = parent;
+				parent->children.push_back(this);
+			}
+			
+
 			void UpdateMatrix();
 		protected:
 			Matrix4		matrix;
@@ -38,6 +53,8 @@ namespace NCL {
 			Vector3		position;
 
 			Vector3		scale;
+			Transform* parent;
+			std::vector<Transform*> children;
 		};
 	}
 }
