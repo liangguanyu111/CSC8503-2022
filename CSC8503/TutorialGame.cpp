@@ -71,8 +71,8 @@ void TutorialGame::UpdateGame(float dt) {
 	if (!inSelectionMode) {
 		world->GetMainCamera()->UpdateCamera(dt);
 	}
-	if (lockedObject != nullptr) {
-		Vector3 objPos = lockedObject->GetTransform().GetPosition();
+	if (player != nullptr) {
+		Vector3 objPos = player->GetTransform().GetPosition();
 		Vector3 camPos = objPos + lockedOffset;
 
 		Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0,1,0));
@@ -81,10 +81,7 @@ void TutorialGame::UpdateGame(float dt) {
 
 		Quaternion q(modelMat);
 		Vector3 angles = q.ToEuler(); //nearly there now!
-
-		//world->GetMainCamera()->SetPosition(camPos);
-		//world->GetMainCamera()->SetPitch(angles.x);
-		//world->GetMainCamera()->SetYaw(angles.y);
+		world->GetMainCamera()->SetTargetPosition(objPos);
 	}
 
 	UpdateKeys();
@@ -97,17 +94,17 @@ void TutorialGame::UpdateGame(float dt) {
 	}
 
 	RayCollision closestCollision;
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::K) && selectionObject) {
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::K) && player) {
 		Vector3 rayPos;
 		Vector3 rayDir;
 
-		rayDir = selectionObject->GetTransform().GetOrientation() * Vector3(0, 0, -1);
+		rayDir = player->GetTransform().GetOrientation() * Vector3(0, 0, -1);
 
-		rayPos = selectionObject->GetTransform().GetPosition();
+		rayPos = player->GetTransform().GetPosition();
 
 		Ray r = Ray(rayPos, rayDir);
 
-		if (world->Raycast(r, closestCollision, true, selectionObject)) {
+		if (world->Raycast(r, closestCollision, true, player)) {
 			if (objClosest) {
 				objClosest->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
 			}
@@ -116,8 +113,6 @@ void TutorialGame::UpdateGame(float dt) {
 			objClosest->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
 		}
 	}
-
-	Debug::DrawLine(Vector3(), Vector3(0, 100, 0), Vector4(1, 0, 0, 1));
 
 	SelectObject();
 	MoveSelectedObject();
@@ -163,12 +158,11 @@ void TutorialGame::UpdateKeys() {
 		world->ShuffleObjects(false);
 	}
 
-	if (lockedObject) {
+	if (player) 
+	{
 		LockedObjectMovement();
 	}
-	else {
-		DebugObjectMovement();
-	}
+
 }
 
 void TutorialGame::LockedObjectMovement() {
@@ -181,29 +175,48 @@ void TutorialGame::LockedObjectMovement() {
 	//so we can take a guess, and use the cross of straight up, and
 	//the right axis, to hopefully get a vector that's good enough!
 
+	//修改-》物体应该向自己的正前方移动
+	//WASD修改物体的旋转，按键检测向正前方移动
+
 	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
+
 	fwdAxis.y = 0.0f;
 	fwdAxis.Normalise();
 
+	Vector3 forward = player->GetTransform().GetForward();
+	float walkSpeed = 3.0f;
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
-		selectionObject->GetPhysicsObject()->AddForce(fwdAxis);
+	float degree = (acos((Vector3::Dot(forward, fwdAxis) / (forward.Length() * fwdAxis.Length())))) / 3.1415926 * 180;
+	Vector3 crossproduct = Vector3::Cross(forward,fwdAxis);
+	if (crossproduct.y > 0)
+	{
+		degree = -degree;
+	}
+	Quaternion quaternion = player->GetTransform().GetOrientation() +  Quaternion::AxisAngleToQuaterion(Vector3(0,1,0), -degree);
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) 
+	{
+		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
+		//player->GetTransform().SetOrientation(player->GetTransform().GetOrientation() + Quaternion::AxisAngleToQuaterion(Vector3(0, 1, 0), -degree));
 	}
 
+
+	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
-		selectionObject->GetPhysicsObject()->AddForce(-fwdAxis);
+		player->GetPhysicsObject()->AddForce(forward * walkSpeed); 
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
-		selectionObject->GetPhysicsObject()->AddForce(rightAxis);
+		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
-		selectionObject->GetPhysicsObject()->AddForce(-rightAxis);
+		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
 	}
 
+
+
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NEXT)) {
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0,-10,0));
+		player->GetPhysicsObject()->AddForce(Vector3(0,-10,0));
 	}
 }
 
@@ -212,19 +225,19 @@ void TutorialGame::DebugObjectMovement() {
 	if (inSelectionMode && selectionObject) {
 		//Twist the selected object!
 		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(-10, 0, 0));
+			selectionObject->GetPhysicsObject()->AddTorque(Vector3(-1, 0, 0));
 		}
 
 		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
+			selectionObject->GetPhysicsObject()->AddTorque(Vector3(1, 0, 0));
 		}
 
 		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM7)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, 10, 0));
+			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, 1, 0));
 		}
 
 		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM8)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, -10, 0));
+			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, -1, 0));
 		}
 
 		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
@@ -381,6 +394,11 @@ GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
 
 	world->AddGameObject(character);
 
+	if (player == nullptr)
+	{
+		this->player = character;
+	}
+
 	return character;
 }
 
@@ -525,6 +543,10 @@ bool TutorialGame::SelectObject() {
 			Window::GetWindow()->LockMouseToWindow(true);
 		}
 	}
+	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) 
+	{
+
+	}
 	if (inSelectionMode) {
 		Debug::Print("Press Q to change to camera mode!", Vector2(5, 85));
 
@@ -549,17 +571,7 @@ bool TutorialGame::SelectObject() {
 				return false;
 			}
 		}
-		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) {
-			if (selectionObject) {
-				if (lockedObject == selectionObject) {
-					lockedObject = nullptr;
-				}
-				else {
-					world->GetMainCamera()->SetTargetPosition(selectionObject->GetTransform().GetPosition());
-					lockedObject = selectionObject;
-				}
-			}
-		}
+
 	}
 	else {
 		Debug::Print("Press Q to change to select mode!", Vector2(5, 85));

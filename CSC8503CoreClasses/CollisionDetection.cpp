@@ -365,8 +365,6 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 	int couter = 1;
 	int min_pos = 0;
 
-	Vector3 tempVertex1, tempVertex2;
-
 	for (vector<Vector3>::iterator it = aixs.begin(); it != aixs.end(); it++)
 	{
 
@@ -383,10 +381,8 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 		float B = Vector3::Dot(MaxB, (*it));
 		float B2 = Vector3::Dot(MinB, (*it));
 
-
 		if (B2 > A || B < A2)
 		{
-			std::cout << "OBB not Collied" << std::endl;
 			return false;
 		}
 
@@ -394,37 +390,12 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 		{
 			minPenetration = (A - A2) + (B - B2) - abs(B - A2);
 			min_pos = couter;
-
-			if (A > B)
-			{
-				tempVertex1 = MinA;
-				tempVertex2 = MaxB;
-			}
-			else
-			{
-				tempVertex1 = MaxA;
-				tempVertex2 = MinB;
-			}
 		}
 		couter += 1;
 	}
-
-	float lengthA = volumeA.GetHalfDimensions().Length();
-	float legnthB = volumeB.GetHalfDimensions().Length();
-
 	if (min_pos <= 6)
 	{
-
-		if (Vector3::Distance(worldTransformA.GetPosition(), tempVertex1)< volumeB.GetHalfDimensions().Length())
-		{
-			std::cout << "Collide point is:"<< tempVertex1 << std::endl;
-		}
-		else if(Vector3::Distance(worldTransformB.GetPosition(), tempVertex2) < volumeA.GetHalfDimensions().Length())
-		{
-			std::cout << "Collide point is:" << tempVertex2 << std::endl;
-		}
-
-
+		
 	}
 	else
 	{

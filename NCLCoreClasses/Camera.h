@@ -99,9 +99,10 @@ namespace NCL {
 		//Sets pitch, in degrees
 		Camera& SetPitch(float p) { pitch = p; return *this; }
 
-		void SetTargetPosition(Vector3 target)
+		void SetTargetPosition(Vector3 target,Vector3 Offset = Vector3(0,2,10))
 		{
 			targetPosition = target;
+			lockOffset = Offset;
 		}
 
 		static Camera BuildPerspectiveCamera(const Vector3& pos, float pitch, float yaw, float fov, float near, float far);
@@ -123,5 +124,6 @@ namespace NCL {
 		Vector3 forward;
 
 		Vector3 targetPosition;
+		Vector3 lockOffset;
 	};
 }

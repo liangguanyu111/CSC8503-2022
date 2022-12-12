@@ -45,12 +45,23 @@ namespace NCL {
 				parent->children.push_back(this);
 			}
 			
+			Vector3 GetForward()
+			{
+				return (orientation * Vector3(0, 0, -1)).Normalised();
+			}
+
+			void SetForWard(Vector3 dir)
+			{
+
+			}
 
 			void UpdateMatrix();
 		protected:
 			Matrix4		matrix;
 			Quaternion	orientation;
 			Vector3		position;
+			Vector3     forward;
+
 
 			Vector3		scale;
 			Transform* parent;

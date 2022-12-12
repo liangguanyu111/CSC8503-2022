@@ -86,6 +86,8 @@ namespace NCL {
 			GameObject* lockedObject	= nullptr;
 			Vector3 lockedOffset		= Vector3(0, 3, 8);
 
+			GameObject* player = nullptr;
+
 			StateGameObject* testStateObject;
 
 
