@@ -183,25 +183,48 @@ void TutorialGame::LockedObjectMovement() {
 	fwdAxis.y = 0.0f;
 	fwdAxis.Normalise();
 
-	Vector3 forward = player->GetTransform().GetForward();
+	Vector3 forward = (player->GetTransform().GetOrientation() * Vector3(0, 0, -1)).Normalised();   
 	float walkSpeed = 3.0f;
+	float temp = Vector3::Dot(forward, fwdAxis) / (forward.Length() * fwdAxis.Length());
+	if (temp > 1)
+	{
+		temp = 1;
+	}
+	else if (temp < -1)
+	{
+		temp = -1;
+	}
 
-	float degree = (acos((Vector3::Dot(forward, fwdAxis) / (forward.Length() * fwdAxis.Length())))) / 3.1415926 * 180;
+	float degree = (acos((temp))) / 3.1415926 * 180;
+
+	if (degree != degree) {
+		std::cout << "oh no\n";
+	}
 	Vector3 crossproduct = Vector3::Cross(forward,fwdAxis);
 	if (crossproduct.y > 0)
 	{
 		degree = -degree;
 	}
-	Quaternion quaternion = player->GetTransform().GetOrientation() +  Quaternion::AxisAngleToQuaterion(Vector3(0,1,0), -degree);
+
+	Vector3 selfAngle = player->GetTransform().GetOrientation().ToEuler();
+	
+
+	Quaternion quaternion = Quaternion::EulerAnglesToQuaternion(selfAngle.x, selfAngle.y - degree, selfAngle.z);
+		//player->GetTransform().GetOrientation() +   Quaternion::AxisAngleToQuaterion(Vector3(0,1,0), degree);
+
+	std::cout << (forward.Length() * fwdAxis.Length()) << "Degree is :" << degree << "Euler angle: "<< quaternion.ToEuler() << std::endl;
+	std::cout << "forward:" << forward << std::endl;
+	std::cout << "Orientation:" << player->GetTransform().GetOrientation() << std::endl;
+
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) 
 	{
 		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
-		//player->GetTransform().SetOrientation(player->GetTransform().GetOrientation() + Quaternion::AxisAngleToQuaterion(Vector3(0, 1, 0), -degree));
+		player->GetTransform().SetOrientation (quaternion);
+	
 	}
-
-
 	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
+
 		player->GetPhysicsObject()->AddForce(forward * walkSpeed); 
 	}
 

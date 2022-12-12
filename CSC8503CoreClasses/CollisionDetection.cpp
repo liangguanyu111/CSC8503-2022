@@ -364,6 +364,7 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 	float minPenetration =0.0f;
 	int couter = 1;
 	int min_pos = 0;
+	Vector3 pointA, pointB;
 
 	for (vector<Vector3>::iterator it = aixs.begin(); it != aixs.end(); it++)
 	{
@@ -390,12 +391,29 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 		{
 			minPenetration = (A - A2) + (B - B2) - abs(B - A2);
 			min_pos = couter;
+			if (A<B&&A>B2)
+			{
+				pointA = MaxA;
+				pointB = MinB;
+			}
+			else if (B<A && B>A2)
+			{
+				pointA = MinA;
+				pointB = MinB;
+			}
 		}
 		couter += 1;
 	}
 	if (min_pos <= 6)
 	{
-		
+		if (Vector3::Distance(pointA, worldTransformB.GetPosition())<= volumeB.GetHalfDimensions().Length())
+		{
+			std::cout << "Point to point,Collide point is" << pointA<<  std::endl;
+		}
+		else
+		{
+			std::cout << "Point to point,Collide point is" << pointB<< std::endl;
+		}
 	}
 	else
 	{
