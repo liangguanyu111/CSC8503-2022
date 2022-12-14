@@ -582,7 +582,7 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 
 	GameObject* cube3 = AddOBBCubeToWorld(Vector3(5, 10, 5), cubeDims);
 	cube3->SetName("OBB1");
-	GameObject* cube4 = AddOBBCubeToWorld(Vector3(2, 10, 2), cubeDims);
+	GameObject* cube4 = AddOBBCubeToWorld(Vector3(2, 10, 5), cubeDims);
 	cube4->SetName("OBB2");
 
 }
