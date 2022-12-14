@@ -6,6 +6,9 @@
 #include "PhysicsSystem.h"
 
 #include "StateGameObject.h"
+#include "NavigationGrid.h"
+#include "NavigationMesh.h"
+
 
 namespace NCL {
 	namespace CSC8503 {
@@ -15,7 +18,6 @@ namespace NCL {
 			~TutorialGame();
 
 			virtual void UpdateGame(float dt);
-
 		protected:
 			void InitialiseAssets();
 
@@ -46,6 +48,8 @@ namespace NCL {
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f);
 
+			GameObject* AddBarrierToWorld(const Vector3& position, const Vector3& dimensions);
+
 			GameObject* AddOBBCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f);
 
 			GameObject* AddPlayerToWorld(const Vector3& position);
@@ -55,6 +59,10 @@ namespace NCL {
 
 			void BridgeConstraintTest();
 
+			//读取grid文本生成地形
+			void BuildMaze(const std::string& filename);
+
+	
 #ifdef USEVULKAN
 			GameTechVulkanRenderer*	renderer;
 #else
@@ -86,10 +94,12 @@ namespace NCL {
 			GameObject* lockedObject	= nullptr;
 			Vector3 lockedOffset		= Vector3(0, 3, 8);
 
+			bool lockMode = false;
 			GameObject* player = nullptr;
 
 			StateGameObject* testStateObject;
 
+			NavigationGrid grid;
 
 			void LockCameraToObject(GameObject* o) {
 				lockedObject = o;

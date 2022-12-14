@@ -16,7 +16,7 @@ using namespace CSC8503;
 
 PhysicsSystem::PhysicsSystem(GameWorld& g) : gameWorld(g)	{
 	applyGravity	= false;
-	useBroadPhase	= false;	
+	useBroadPhase	= true;	
 	dTOffset		= 0.0f;
 	globalDamping	= 0.995f;
 	SetGravity(Vector3(0.0f, -9.8f, 0.0f));
@@ -100,7 +100,7 @@ void PhysicsSystem::Update(float dt) {
 			NarrowPhase();
 		}
 		else {
-			BasicCollisionDetection();
+			//BasicCollisionDetection();
 		}
 
 		//This is our simple iterative solver - 
@@ -286,20 +286,24 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 
 	if (totalMass == 0)
 	{
-		return; // two static objects ??
+		return; 
 	}
-	//是否应该分开两个物体？
-
+	
 	transformA.SetPosition(transformA.GetPosition() - (p.normal * p.penetration * (physA->GetInverseMass() / totalMass)));
 	transformB.SetPosition(transformB.GetPosition() + (p.normal * p.penetration * (physB->GetInverseMass() / totalMass)));
 
 	float force = p.penetration * ((physA->GetSpringCoefficient()+ physB->GetSpringCoefficient())/2);
 
-	float cRestitution = 0.66f * ((physA->Getelasticity() + physB->Getelasticity()) / 2); ; // disperse some kinectic energy 
+	float cRestitution = 0.66f * ((physA->Getelasticity() + physB->Getelasticity()) / 2);
 	
 	physA->AddForceAtPosition(-p.normal * force * cRestitution, p.localA);
 	physB->AddForceAtPosition(p.normal * force * cRestitution, p.localB);
-
+	
+	if (a.GetName() == "Cube"||b.GetName()=="Cube")
+	{
+		std::cout << p.localA << std::endl;
+		std::cout << p.localB << std::endl;
+	}
 }
 /*
 
@@ -328,10 +332,11 @@ void PhysicsSystem::BroadPhase() {
 	tree.OperateOnContents([&](std::list < QuadTreeEntry < GameObject* > >& data) {
 			CollisionDetection::CollisionInfo info;
 			for (auto i = data.begin(); i != data.end(); ++i) {
-				for (auto j = std::next(i); j != data.end(); ++j) {
+				for (auto j = std::next(i); j != data.end(); ++j)
+				{
 					// is this pair of items already in the collision set -
 					 // if the same pair is in another quadtree node together etc
-					 info.a = std::min((*i).object, (*j).object);
+					info.a = std::min((*i).object, (*j).object);
 					info.b = std::max((*i).object, (*j).object);
 					broadphaseCollisions.insert(info);
 				}

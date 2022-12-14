@@ -14,17 +14,17 @@ void Camera::UpdateCamera(float dt) {
 	pitch -= (Window::GetMouse()->GetRelativePosition().y);
 	yaw -= (Window::GetMouse()->GetRelativePosition().x);
 
-	//Bounds check the pitch, to be between straight up and straight down ;)
+	//ounds check the pitch, to be between straight up and straight down ;)
 	pitch = std::min(pitch, 90.0f);
 	pitch = std::max(pitch, -90.0f);
-
+	/* 
 	if (yaw < 0) {
 		yaw += 360.0f;
 	}
 	if (yaw > 360.0f) {
 		yaw -= 360.0f;
 	}
-
+	/*
 	double pi = 3.14159265359;
 	forward.z =  -cos(Maths::DegreesToRadians(yaw)) * cos(Maths::DegreesToRadians(pitch));
 	forward.y = sin(Maths::DegreesToRadians(pitch));
@@ -36,11 +36,11 @@ void Camera::UpdateCamera(float dt) {
 	{
 		position = targetPosition - forward * lockOffset.Length();
 	}
-
+	*/
 
 	float frameSpeed = 100 * dt;
 
-	/*
+	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) {
 		position += Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;
 	}
@@ -61,7 +61,7 @@ void Camera::UpdateCamera(float dt) {
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) {
 		position.y -= frameSpeed;
 	}
-	*/
+	
 }
 
 /*

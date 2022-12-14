@@ -8,6 +8,7 @@
 #include "OrientationConstraint.h"
 #include "StateGameObject.h"
 
+#include <fstream>
 
 
 using namespace NCL;
@@ -22,6 +23,8 @@ TutorialGame::TutorialGame()	{
 #endif
 
 	physics		= new PhysicsSystem(*world);
+
+	grid =  NavigationGrid(2);
 
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
@@ -158,7 +161,12 @@ void TutorialGame::UpdateKeys() {
 		world->ShuffleObjects(false);
 	}
 
-	if (player) 
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::L))
+	{
+		lockMode =!lockMode;
+	}
+
+	if (lockMode)
 	{
 		LockedObjectMovement();
 	}
@@ -184,58 +192,65 @@ void TutorialGame::LockedObjectMovement() {
 	fwdAxis.Normalise();
 
 	Vector3 forward = (player->GetTransform().GetOrientation() * Vector3(0, 0, -1)).Normalised();   
-	float walkSpeed = 3.0f;
-	float temp = Vector3::Dot(forward, fwdAxis) / (forward.Length() * fwdAxis.Length());
-	if (temp > 1)
-	{
-		temp = 1;
-	}
-	else if (temp < -1)
-	{
-		temp = -1;
-	}
-
-	float degree = (acos((temp))) / 3.1415926 * 180;
-
-	if (degree != degree) {
-		std::cout << "oh no\n";
-	}
-	Vector3 crossproduct = Vector3::Cross(forward,fwdAxis);
-	if (crossproduct.y > 0)
-	{
-		degree = -degree;
-	}
-
-	Vector3 selfAngle = player->GetTransform().GetOrientation().ToEuler();
+	float walkSpeed = 15.0f;
 	
-
-	Quaternion quaternion = Quaternion::EulerAnglesToQuaternion(selfAngle.x, selfAngle.y - degree, selfAngle.z);
-		//player->GetTransform().GetOrientation() +   Quaternion::AxisAngleToQuaterion(Vector3(0,1,0), degree);
-
-	std::cout << (forward.Length() * fwdAxis.Length()) << "Degree is :" << degree << "Euler angle: "<< quaternion.ToEuler() << std::endl;
-	std::cout << "forward:" << forward << std::endl;
-	std::cout << "Orientation:" << player->GetTransform().GetOrientation() << std::endl;
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) 
 	{
+		float temp = Vector3::Dot(forward, fwdAxis) / (forward.Length() * fwdAxis.Length());
+		temp = temp > 1 ? 1 : temp;
+		temp = temp < -1 ? -1 : temp;
+
+		float degree = (acos((temp))) / 3.1415926 * 180;
+		if (Vector3::Cross(forward, fwdAxis).y > 0)
+		{
+			degree = -degree;
+		}
 		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
-		player->GetTransform().SetOrientation (quaternion);
+		player->GetTransform().Rotate(Vector3(0, - degree,0));
 	
 	}
 	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
-
+	
+		float temp = Vector3::Dot(forward, -fwdAxis) / (forward.Length() * fwdAxis.Length());
+		temp = temp > 1 ? 1 : temp;
+		temp = temp < -1 ? -1 : temp;
+		float degree = (acos((temp))) / 3.1415926 * 180;
+		if (Vector3::Cross(forward, -fwdAxis).y > 0)
+		{
+			degree = -degree;
+		}
+		player->GetTransform().Rotate(Vector3(0, -degree, 0));
 		player->GetPhysicsObject()->AddForce(forward * walkSpeed); 
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
+
+		float temp = Vector3::Dot(forward, rightAxis) / (forward.Length() * rightAxis.Length());
+		temp = temp > 1 ? 1 : temp;
+		temp = temp < -1 ? -1 : temp;
+		float degree = (acos((temp))) / 3.1415926 * 180;
+		if (Vector3::Cross(forward, rightAxis).y > 0)
+		{
+			degree = -degree;
+		}
+		player->GetTransform().Rotate(Vector3(0, -degree, 0));
 		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
+		float temp = Vector3::Dot(forward, -rightAxis) / (forward.Length() * rightAxis.Length());
+		temp = temp > 1 ? 1 : temp;
+		temp = temp < -1 ? -1 : temp;
+		float degree = (acos((temp))) / 3.1415926 * 180;
+		if (Vector3::Cross(forward, -rightAxis).y > 0)
+		{
+			degree = -degree;
+		}
 		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
+		player->GetTransform().Rotate(Vector3(0, -degree, 0));
 	}
-
 
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NEXT)) {
@@ -298,7 +313,8 @@ void TutorialGame::InitWorld() {
 
 	//InitGameExamples();
 	InitDefaultFloor();
-	testStateObject = AddStateObjectToWorld(Vector3(0, 5, 0));
+	BuildMaze("TestGrid1.txt");
+	testStateObject = AddStateObjectToWorld(Vector3(2, 0, 2));
 }
 
 /*
@@ -375,6 +391,32 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 
 	return cube;
 }
+
+GameObject* TutorialGame::AddBarrierToWorld(const Vector3& position,const Vector3& dimensions) {
+	
+	GameObject* cube = new GameObject();
+
+	AABBVolume* volume = new AABBVolume(dimensions);
+	cube->SetBoundingVolume((CollisionVolume*)volume);
+
+	cube->GetTransform().SetPosition(position).SetScale(dimensions * 2);
+
+	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+
+	cube->GetPhysicsObject()->SetInverseMass(0);
+	cube->GetPhysicsObject()->InitCubeInertia();
+
+	cube->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+
+	cube->SetLayer(Obstcale);
+
+	world->AddGameObject(cube);
+
+	return cube;
+}
+
+
 
 GameObject* TutorialGame::AddOBBCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass) {
 	GameObject* cube = new GameObject();
@@ -532,10 +574,10 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 		}
 	}
 	*/
-	GameObject  *cube  = AddOBBCubeToWorld(Vector3(0,2,0), cubeDims);
-	GameObject* cube4 = AddOBBCubeToWorld(Vector3(3, 2, 3), cubeDims);
+	GameObject* cube2 = AddCubeToWorld(Vector3(5, 10 , 5), cubeDims);
+	cube2->SetName("Cube");
 	GameObject* player = AddPlayerToWorld(Vector3(3, 1, 0));
-	cube->SetName("Cube");
+	player->SetName("Player");
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims) {
@@ -654,6 +696,26 @@ void TutorialGame::BridgeConstraintTest()
 	}
 	PositionConstraint* constraint = new PositionConstraint(previous, end, maxDistance);
 	world -> AddConstraint(constraint);
+}
+
+void TutorialGame::BuildMaze(const std::string& filename)
+{
+	const std::string ASSETROOT(ASSETROOTLOCATION);
+	std::ifstream infile(ASSETROOT+ "Data/" + filename);
+
+	int nodeSize, gridWidth, gridHeight;
+
+	infile >> nodeSize;
+	infile >> gridWidth;
+	infile >> gridHeight;
+	//设置游戏场景的基础地形
+	AddBarrierToWorld(Vector3(0, 0, -gridHeight * 10), Vector3(gridWidth, 5, 0.5f));
+	AddBarrierToWorld(Vector3(0, 0, gridHeight * 10), Vector3(gridWidth, 5, 0.5f));
+
+	//这里AABB旋转之后 碰撞体积不对 实现OBB碰撞之后改成OBB
+	AddBarrierToWorld(Vector3(gridWidth / 2, 0, 0), Vector3(gridHeight * 20, 5, 0.5f))->GetTransform().Rotate(Vector3(0, 90, 0));
+	AddBarrierToWorld(Vector3(-gridWidth / 2, 0, 0), Vector3(gridHeight * 20, 5, 0.5f))->GetTransform().Rotate(Vector3(0, 90, 0));
+	
 }
 	
 

@@ -33,14 +33,18 @@ namespace NCL {
 		public:
 			NavigationGrid();
 			NavigationGrid(const std::string&filename);
+			NavigationGrid(int nodeSize);
 			~NavigationGrid();
 
-			bool FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) override;
-				
+		  	bool FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) override;
+			 void PrintAllNode();
+
+			bool ReturnSamplePoint(Vector3& pos);
 		protected:
 			bool		NodeInList(GridNode* n, std::vector<GridNode*>& list) const;
 			GridNode*	RemoveBestNode(std::vector<GridNode*>& list) const;
 			float		Heuristic(GridNode* hNode, GridNode* endNode) const;
+			char maze[50][50];
 			int nodeSize;
 			int gridWidth;
 			int gridHeight;

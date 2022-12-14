@@ -72,11 +72,82 @@ NavigationGrid::NavigationGrid(const std::string&filename) : NavigationGrid() {
 	}
 }
 
+NCL::CSC8503::NavigationGrid::NavigationGrid(int nodeSize)
+{
+	this->nodeSize = nodeSize;
+	gridWidth = 50;
+	gridHeight = 50;
+	allNodes = new GridNode[50 * 50];
+   for (int i = 0; i < 50; i++)
+   {
+	   for (int j = 0; j < 50; j++)
+	   {
+		   GridNode& n = allNodes[(50 * i) + j];
+			if(i==0||i==49||j==0||j==49)
+			{
+			   n.type = (int)'x';
+			}
+		   else
+		   {
+			   n.type = (int)'.';
+		   }
+		   n.position = Vector3((int)(j * nodeSize), 0, (int)(i * nodeSize));
+	   }
+   }
+
+   for (int y = 0; y < 50; ++y) {
+	   for (int x = 0; x < 50; ++x) {
+		   GridNode& n = allNodes[(50 * y) + x];
+
+		   if (y > 0) { //get the above node
+			   n.connected[0] = &allNodes[(50 * (y - 1)) + x];
+		   }
+		   if (y < gridHeight - 1) { //get the below node
+			   n.connected[1] = &allNodes[(50 * (y + 1)) + x];
+		   }
+		   if (x > 0) { //get left node
+			   n.connected[2] = &allNodes[(50 * (y)) + (x - 1)];
+		   }
+		   if (x < 50 - 1) { //get right node
+			   n.connected[3] = &allNodes[(50 * (y)) + (x + 1)];
+		   }
+		   for (int i = 0; i < 4; ++i) {
+			   if (n.connected[i]) {
+				   if (n.connected[i]->type == '.') {
+					   n.costs[i] = 1;
+				   }
+				   if (n.connected[i]->type == 'x') {
+					   n.connected[i] = nullptr; //actually a wall, disconnect!
+				   }
+			   }
+		   }
+	   }
+   }
+
+}
+
 NavigationGrid::~NavigationGrid()	{
 	delete[] allNodes;
 }
 
+void NavigationGrid::PrintAllNode()
+{
+	GridNode* node;
+	for (int i = 0; i < 50; i++)
+	{
+		for (int j = 0; j < 50; j++)
+		{
+			 node = &allNodes[(50 * i) + j];
+			 std::cout << node->position<<" ";
+		}
+		std::cout << std::endl;
+	}
+}
+
 bool NavigationGrid::FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) {
+
+	std::cout << "Second" << std::endl;
+	PrintAllNode();
 	//need to work out which node 'from' sits in, and 'to' sits in
 	int fromX = ((int)from.x / nodeSize);
 	int fromZ = ((int)from.z / nodeSize);
@@ -93,6 +164,7 @@ bool NavigationGrid::FindPath(const Vector3& from, const Vector3& to, Navigation
 		toZ < 0 || toZ > gridHeight - 1) {
 		return false; //outside of map region!
 	}
+
 
 	GridNode* startNode = &allNodes[(fromZ * gridWidth) + fromX];
 	GridNode* endNode	= &allNodes[(toZ * gridWidth) + toX];
@@ -149,6 +221,21 @@ bool NavigationGrid::FindPath(const Vector3& from, const Vector3& to, Navigation
 		}
 	}
 	return false; //open list emptied out with no path!
+}
+
+bool NavigationGrid::ReturnSamplePoint(Vector3& pos)
+{
+	int i = rand() % gridWidth;
+	int j = rand() % gridHeight;
+
+	GridNode n = allNodes[(50 * j) + i];
+
+	if (n.type != (int)'x')
+	{
+		pos = Vector3((float)(j * nodeSize), 0, (float)(i * nodeSize));
+		return true;
+	}
+	return false;
 }
 
 bool NavigationGrid::NodeInList(GridNode* n, std::vector<GridNode*>& list) const 

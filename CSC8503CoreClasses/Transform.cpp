@@ -34,3 +34,4 @@ Transform& Transform::SetOrientation(const Quaternion& worldOrientation) {
 	UpdateMatrix();
 	return *this;
 }
+

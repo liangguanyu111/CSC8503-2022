@@ -10,6 +10,7 @@ namespace NCL::CSC8503 {
 	{
 		Default,
 		Cube,
+		Obstcale,//忽略彼此的碰撞
 	};
 
 	class NetworkObject;

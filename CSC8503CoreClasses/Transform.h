@@ -50,10 +50,12 @@ namespace NCL {
 				return (orientation * Vector3(0, 0, -1)).Normalised();
 			}
 
-			void SetForWard(Vector3 dir)
+			void Rotate(Vector3 angle)
 			{
-
+				Vector3 selfAngle =GetOrientation().ToEuler();
+				SetOrientation(Quaternion::EulerAnglesToQuaternion(selfAngle.x + angle.x, selfAngle.y + angle.y, selfAngle.z + angle.z));
 			}
+
 
 			void UpdateMatrix();
 		protected:

@@ -39,10 +39,11 @@ vector < Vector3 > testNodes;
 
 
 void TestPathfinding() {
-	NavigationGrid grid("TestGrid1.txt");
+
+	NavigationGrid grid(2);
 	NavigationPath outPath;
-	Vector3 startPos(80, 0, 10);
-	Vector3 endPos(80, 0, 80);
+	Vector3 startPos(2, 0, 2);
+	Vector3 endPos(30, 0, 30);
 	bool found = grid.FindPath(startPos, endPos, outPath);
 	Vector3 pos;
 	testNodes.clear();
@@ -95,6 +96,10 @@ int main() {
 
 	TutorialGame* g = new TutorialGame();
 	w->GetTimer()->GetTimeDeltaSeconds(); //Clear the timer so we don't get a larget first dt!
+
+
+	//TestPathfinding();
+
 	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) {
 		float dt = w->GetTimer()->GetTimeDeltaSeconds();
 		if (dt > 0.1f) {
@@ -115,10 +120,11 @@ int main() {
 		w->SetTitle("Gametech frame time:" + std::to_string(1000.0f * dt));
 
 		g->UpdateGame(dt);
-		TestPathfinding();
-		DisplayPathfinding();
+
+	    //DisplayPathfinding();
 
 		//TestPushdownAutomata(w);
 	}
 	Window::DestroyGameWindow();
 }
+ 
