@@ -14,7 +14,8 @@
 using namespace NCL;
 using namespace CSC8503;
 
-TutorialGame::TutorialGame()	{
+TutorialGame::TutorialGame()
+{
 	world		= new GameWorld();
 #ifdef USEVULKAN
 	renderer	= new GameTechVulkanRenderer(*world);
@@ -24,7 +25,7 @@ TutorialGame::TutorialGame()	{
 
 	physics		= new PhysicsSystem(*world);
 
-	grid =  NavigationGrid(2);
+	grid = new NavigationGrid(2);
 
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
@@ -68,6 +69,8 @@ TutorialGame::~TutorialGame()	{
 	delete physics;
 	delete renderer;
 	delete world;
+
+	delete grid;
 }
 
 void TutorialGame::UpdateGame(float dt) {
@@ -516,7 +519,7 @@ StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3
 	float meshSize = 3.0f;
 	float inverseMass = 0.5f;
 
-	StateGameObject* character = new StateGameObject();
+	StateGameObject* character = new StateGameObject(grid);
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	character->SetBoundingVolume((CollisionVolume*)volume);
@@ -574,10 +577,14 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 		}
 	}
 	*/
-	GameObject* cube2 = AddCubeToWorld(Vector3(5, 10 , 5), cubeDims);
-	cube2->SetName("Cube");
 	GameObject* player = AddPlayerToWorld(Vector3(3, 1, 0));
 	player->SetName("Player");
+
+	GameObject* cube3 = AddOBBCubeToWorld(Vector3(5, 10, 5), cubeDims);
+	cube3->SetName("OBB1");
+	GameObject* cube4 = AddOBBCubeToWorld(Vector3(2, 10, 2), cubeDims);
+	cube4->SetName("OBB2");
+
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims) {
@@ -613,7 +620,7 @@ bool TutorialGame::SelectObject() {
 
 	}
 	if (inSelectionMode) {
-		Debug::Print("Press Q to change to camera mode!", Vector2(5, 85));
+		//Debug::Print("Press Q to change to camera mode!", Vector2(5, 85));
 
 		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
 			if (selectionObject) {	//set colour to deselected;
@@ -639,7 +646,7 @@ bool TutorialGame::SelectObject() {
 
 	}
 	else {
-		Debug::Print("Press Q to change to select mode!", Vector2(5, 85));
+		//Debug::Print("Press Q to change to select mode!", Vector2(5, 85));
 	}
 	return false;
 }

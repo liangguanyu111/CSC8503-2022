@@ -99,7 +99,7 @@ namespace NCL {
 
 			StateGameObject* testStateObject;
 
-			NavigationGrid grid;
+			NavigationGrid* grid;
 
 			void LockCameraToObject(GameObject* o) {
 				lockedObject = o;

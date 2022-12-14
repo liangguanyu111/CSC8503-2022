@@ -345,11 +345,7 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 	aixs.push_back(VBy);
 	aixs.push_back(VBz);
 
-	Vector3 centerA = worldTransformA.GetPosition();
-	Vector3 volumeASize = volumeA.GetHalfDimensions();
 
-	Vector3 centerB = worldTransformB.GetPosition();
-	Vector3 volumeBSize = volumeB.GetHalfDimensions();
 
 	aixs.push_back(Vector3::Cross(VAx, VBx));
 	aixs.push_back(Vector3::Cross(VAx, VBy));
@@ -365,6 +361,7 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 	int couter = 1;
 	int min_pos = 0;
 	Vector3 pointA, pointB;
+	Vector3 normal;
 
 	for (vector<Vector3>::iterator it = aixs.begin(); it != aixs.end(); it++)
 	{
@@ -391,6 +388,7 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 		{
 			minPenetration = (A - A2) + (B - B2) - abs(B - A2);
 			min_pos = couter;
+			normal = *it;
 			if (A<B&&A>B2)
 			{
 				pointA = MaxA;
@@ -404,25 +402,44 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 		}
 		couter += 1;
 	}
+
 	if (min_pos <= 6)
 	{
 		if (Vector3::Distance(pointA, worldTransformB.GetPosition())<= volumeB.GetHalfDimensions().Length())
 		{
 			std::cout << "Point to point,Collide point is" << pointA<<  std::endl;
+
+			float p1 = Vector3::Dot(pointA, normal);
+			float p2 = Vector3::Dot(pointB, normal);
+
+			Vector3 collidePointB = pointA -  normal.Normalised() * (p1 - p2);
+
+			Debug::DrawLine(pointA, collidePointB, Vector4(1, 0, 0, 1), 0.5f);
+
+			std::cout << "Point to point,Collide point is:" << pointA<<" And "<<collidePointB<< std::endl;
 		}
 		else
 		{
 			std::cout << "Point to point,Collide point is" << pointB<< std::endl;
+
+
+			float p1 = Vector3::Dot(pointA, normal);
+			float p2 = Vector3::Dot(pointB, normal);
+
+			Vector3 collidePointA = pointB - normal.Normalised() * (p2 - p1);
+
+			Debug::DrawLine(pointA, collidePointA, Vector4(1, 0, 0, 1), 0.5f);
 		}
+		return true;
 	}
 	else
 	{
-		std::cout << "edge to SomeThing Collied" << std::endl;
+		std::cout << "Edge to Edge" << std::endl;
+		return true;
 	}
 
-	
 
-	return true;
+	return false;
 }
 
 Vector3 CollisionDetection::OBBSupport(const Transform& worldTransform, Vector3 worldDir)

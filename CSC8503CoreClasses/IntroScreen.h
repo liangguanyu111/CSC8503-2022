@@ -13,21 +13,24 @@ namespace NCL {
 	namespace CSC8503 {
 		class IntroScreen : public PushdownState
 		{
-			PushdownResult OnUpdate(float dt,
-				PushdownState** newState) override {
-				if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::SPACE)) {
+			PushdownResult OnUpdate(float dt,PushdownState** newState) override {
+
+				Debug::Print("Start Single Game", Vector2(5, 50));
+				Debug::Print("Start Mutiple Game", Vector2(5, 55));
+
+ 				if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) {
 					*newState = new GameScreen();
 					return PushdownResult::Push;
 				}
-				if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::ESCAPE)) {
+				else if (Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) {
 					return PushdownResult::Pop;
 				}
+
 				return PushdownResult::NoChange;
 			};
 
 			void OnAwake() override {
-				std::cout << " Welcome to a really awesome game !\n";
-				std::cout << " Press Space To Begin or escape to quit !\n";
+
 			}
 
 		};

@@ -8,7 +8,7 @@ namespace NCL {
         class StateMachine;
         class StateGameObject : public GameObject  {
         public:
-            StateGameObject();
+            StateGameObject(NavigationGrid* grid);
             ~StateGameObject();
             
             void Update(float dt);
@@ -19,14 +19,17 @@ namespace NCL {
             void MoveRight(float dt);
             void MoveToPos(Vector3 pos);
             void Partorl(float dt);
+            void DisplayPathfinding();
+
 
             StateMachine* stateMachine;
             float counter;
 
 
-            NavigationGrid grid;
+            NavigationGrid* grid;
             NavigationPath currentPath;
             Vector3 targetPosition;
+            Vector3 nextPos;
             bool init = false;
             
             

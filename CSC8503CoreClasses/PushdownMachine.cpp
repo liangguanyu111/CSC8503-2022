@@ -38,6 +38,10 @@ bool PushdownMachine::Update(float dt) {
 				activeState = newState;
 				activeState->OnAwake();
 			}break;
+			case PushdownState::NoChange:
+			{
+				return false;
+			}
 		}
 	}
 	else {

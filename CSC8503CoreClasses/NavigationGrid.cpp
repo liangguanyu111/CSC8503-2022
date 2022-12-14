@@ -123,7 +123,6 @@ NCL::CSC8503::NavigationGrid::NavigationGrid(int nodeSize)
 		   }
 	   }
    }
-
 }
 
 NavigationGrid::~NavigationGrid()	{
@@ -144,10 +143,8 @@ void NavigationGrid::PrintAllNode()
 	}
 }
 
-bool NavigationGrid::FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) {
-
-	std::cout << "Second" << std::endl;
-	PrintAllNode();
+bool NavigationGrid::FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) 
+{
 	//need to work out which node 'from' sits in, and 'to' sits in
 	int fromX = ((int)from.x / nodeSize);
 	int fromZ = ((int)from.z / nodeSize);
