@@ -83,7 +83,7 @@ NCL::CSC8503::NavigationGrid::NavigationGrid(int nodeSize)
 	   for (int j = 0; j < 50; j++)
 	   {
 		   GridNode& n = allNodes[(50 * i) + j];
-			if(i==0||i==49||j==0||j==49)
+			if(i==0||i==49||j==0||j==49||(i==24&&j>=13&&j<=38)||(j==24&&i>=13&&i<=38))
 			{
 			   n.type = (int)'x';
 			}
@@ -91,9 +91,10 @@ NCL::CSC8503::NavigationGrid::NavigationGrid(int nodeSize)
 		   {
 			   n.type = (int)'.';
 		   }
-		   n.position = Vector3((int)(j * nodeSize), 0, (int)(i * nodeSize));
+			n.position = Vector3(((j - (gridWidth/2)  + 1)) * nodeSize  , 0, ((i - (gridHeight/2) + 1) * nodeSize  ));
 	   }
    }
+
 
    for (int y = 0; y < 50; ++y) {
 	   for (int x = 0; x < 50; ++x) {
@@ -146,11 +147,12 @@ void NavigationGrid::PrintAllNode()
 bool NavigationGrid::FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) 
 {
 	//need to work out which node 'from' sits in, and 'to' sits in
-	int fromX = ((int)from.x / nodeSize);
-	int fromZ = ((int)from.z / nodeSize);
+	//24 is a specfic value just for 50 * 50 grid
+	int fromX = ((int)from.x / nodeSize) + 24;
+	int fromZ = ((int)from.z / nodeSize) + 24;
 
-	int toX = ((int)to.x / nodeSize);
-	int toZ = ((int)to.z / nodeSize);
+	int toX = ((int)to.x / nodeSize) + 24;
+	int toZ = ((int)to.z / nodeSize) + 24;
 
 	if (fromX < 0 || fromX > gridWidth - 1 ||
 		fromZ < 0 || fromZ > gridHeight - 1) {
@@ -229,7 +231,7 @@ bool NavigationGrid::ReturnSamplePoint(Vector3& pos)
 
 	if (n.type != (int)'x')
 	{
-		pos = Vector3((float)(j * nodeSize), 0, (float)(i * nodeSize));
+		pos = n.position;
 		return true;
 	}
 	return false;

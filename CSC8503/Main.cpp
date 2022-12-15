@@ -36,40 +36,12 @@ using namespace CSC8503;
 
 
 vector < Vector3 > testNodes;
+PushdownMachine machine(new IntroScreen());
 
 
-void TestPathfinding() {
-
-	NavigationGrid grid(2);
-	NavigationPath outPath;
-	Vector3 startPos(2, 0, 2);
-	Vector3 endPos(30, 0, 30);
-	bool found = grid.FindPath(startPos, endPos, outPath);
-	Vector3 pos;
-	testNodes.clear();
-	while (outPath.PopWaypoint(pos))
-	{
-		testNodes.push_back(pos);
-	}
-}
-
-void DisplayPathfinding()
+void TestPushdownAutomata(Window* w)
 {
-	for (int i = 1; i < testNodes.size(); ++i) {
-		Vector3 a = testNodes[i - 1];
-		Vector3 b = testNodes[i];
-		Debug::DrawLine(a, b, Vector4(0, 1, 0, 1));
-	}
-}
-
-void TestPushdownAutomata(Window* w) {
-	PushdownMachine machine(new IntroScreen());
-	while (w -> UpdateWindow()) {
-		float dt = w -> GetTimer() -> GetTimeDeltaSeconds();
-		if (!machine.Update(dt)) {
-			return;
-		}
-	}
+	machine.Update(w->GetTimer()->GetTimeDeltaSeconds());
 }
 
 /*
@@ -96,8 +68,6 @@ int main() {
 
 	TutorialGame* g = new TutorialGame();
 	w->GetTimer()->GetTimeDeltaSeconds(); //Clear the timer so we don't get a larget first dt!
-
-
 	//TestPathfinding();
 
 	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) {
@@ -120,7 +90,7 @@ int main() {
 		w->SetTitle("Gametech frame time:" + std::to_string(1000.0f * dt));
 
 		g->UpdateGame(dt);
-		//TestPushdownAutomata(w);
+		TestPushdownAutomata(w);
 	    //DisplayPathfinding();
 	}
 	Window::DestroyGameWindow();

@@ -60,7 +60,7 @@ namespace NCL {
 			void BridgeConstraintTest();
 
 			//读取grid文本生成地形
-			void BuildMaze(const std::string& filename);
+			void BuildMaze();
 
 	
 #ifdef USEVULKAN
@@ -96,8 +96,6 @@ namespace NCL {
 
 			bool lockMode = false;
 			GameObject* player = nullptr;
-
-			StateGameObject* testStateObject;
 
 			NavigationGrid* grid;
 

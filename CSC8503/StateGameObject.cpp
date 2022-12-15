@@ -54,17 +54,12 @@ void StateGameObject::MoveToPos(Vector3 pos)
 {
 	if (Vector3::Distance(this->transform.GetPosition(), pos) > 0.1f)
 	{
-		float speed = 30.0f;
-		//std::cout << "Current Pos:"<<this->transform.GetPosition() << std::endl;
-		Vector3 direction = pos - this->transform.GetPosition();
+		Vector3 direction = (pos - this->transform.GetPosition()).Normalised();
 		direction.y = 0;
-		//this->GetPhysicsObject()->SetLinearVelocity(direction * speed);
-		this->GetPhysicsObject()->AddForce(direction * speed);
+	
+		this->transform.SetPosition(this->transform.GetPosition() + direction/10);
 	}
-	else
-	{
-		this->GetPhysicsObject()->ClearForces();
-	}
+
 }
 
 void NCL::CSC8503::StateGameObject::Partorl(float dt)
@@ -87,6 +82,13 @@ void NCL::CSC8503::StateGameObject::Partorl(float dt)
 	if (Vector3::Distance(tempPos, nextPos) < 0.1f)
 	{
 		currentPath.PopWaypoint(nextPos);
+		
+		if (tempPos != nextPos)
+		{
+			Vector3 direction = nextPos - tempPos;
+			this->transform.RotateTo(direction);
+		}
+	
 	}
 	
 	if (Vector3::Distance(tempPos, nextPos) >= 0.1f)

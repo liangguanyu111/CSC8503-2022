@@ -299,11 +299,6 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	physA->AddForceAtPosition(-p.normal * force * cRestitution, p.localA);
 	physB->AddForceAtPosition(p.normal * force * cRestitution, p.localB);
 	
-	if (a.GetName() == "Cube"||b.GetName()=="Cube")
-	{
-		std::cout << p.localA << std::endl;
-		std::cout << p.localB << std::endl;
-	}
 }
 /*
 
@@ -355,6 +350,10 @@ void PhysicsSystem::NarrowPhase()
 	for (std::set < CollisionDetection::CollisionInfo >::iterator i = broadphaseCollisions.begin(); i != broadphaseCollisions.end();++i) 
 	{
 		CollisionDetection::CollisionInfo info = *i;
+		if (info.a->GetPhysicsObject()->GetInverseMass() == 0 && info.b->GetPhysicsObject()->GetInverseMass() == 0)
+		{
+			continue;
+		}
 	    if (CollisionDetection::ObjectIntersection(info.a, info.b, info)) 
 		{
 			info.framesLeft = numCollisionFrames;

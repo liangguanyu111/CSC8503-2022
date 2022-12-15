@@ -330,38 +330,45 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 {
 	std::vector<Vector3>aixs;
 
-	Vector3 VAx = worldTransformA.GetOrientation() * Vector3(1, 0, 0);
-	Vector3 VAy = worldTransformA.GetOrientation() * Vector3(0, 1, 0);
-	Vector3 VAz = worldTransformA.GetOrientation() * Vector3(0, 0, 1);
+	Vector3 VAx = worldTransformA.GetOrientation() * worldTransformA.GetScale() * Vector3(1, 0, 0);
+	Vector3 VAy = worldTransformA.GetOrientation() * worldTransformA.GetScale() * Vector3(0, 1, 0);
+	Vector3 VAz = worldTransformA.GetOrientation() * worldTransformA.GetScale() * Vector3(0, 0, 1);
 
 	aixs.push_back(VAx);
 	aixs.push_back(VAy);
 	aixs.push_back(VAz);
 
-	Vector3 VBx = worldTransformB.GetOrientation() * Vector3(1, 0, 0);
-	Vector3 VBy = worldTransformB.GetOrientation() * Vector3(0, 1, 0);
-	Vector3 VBz = worldTransformB.GetOrientation() * Vector3(0, 0, 1);
+	Vector3 VBx = worldTransformB.GetOrientation() * worldTransformA.GetScale() * Vector3(1, 0, 0);
+	Vector3 VBy = worldTransformB.GetOrientation() * worldTransformA.GetScale() * Vector3(0, 1, 0);
+	Vector3 VBz = worldTransformB.GetOrientation() * worldTransformA.GetScale() * Vector3(0, 0, 1);
 	aixs.push_back(VBx);
 	aixs.push_back(VBy);
 	aixs.push_back(VBz);
 
-
-
+	if(VAx.Normalised()!=VBx.Normalised())
 	aixs.push_back(Vector3::Cross(VAx, VBx));
+	if (VAx.Normalised() != VBy.Normalised())
 	aixs.push_back(Vector3::Cross(VAx, VBy));
+	if (VAx.Normalised() != VBz.Normalised())
 	aixs.push_back(Vector3::Cross(VAx, VBz));
+	if (VAy.Normalised() != VBx.Normalised())
 	aixs.push_back(Vector3::Cross(VAy, VBx));
+	if (VAy.Normalised() != VBy.Normalised())
 	aixs.push_back(Vector3::Cross(VAy, VBy));
+	if (VAy.Normalised() != VBz.Normalised())
 	aixs.push_back(Vector3::Cross(VAy, VBz));
+	if (VAz.Normalised() != VBx.Normalised())
 	aixs.push_back(Vector3::Cross(VAz, VBx));
+	if (VAz.Normalised() != VBy.Normalised())
 	aixs.push_back(Vector3::Cross(VAz, VBy));
+	if (VAz.Normalised() != VBz.Normalised())
 	aixs.push_back(Vector3::Cross(VAz, VBz));
 
 	float minPenetration =0.0f;
 	int couter = 1;
 	int min_pos = 0;
 	Vector3 pointA, pointB;
-	Vector3 normal;
+	Vector3 normal = aixs[0];
 
 	for (vector<Vector3>::iterator it = aixs.begin(); it != aixs.end(); it++)
 	{
@@ -403,33 +410,26 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 		couter += 1;
 	}
 
-
 	if (Vector3::Distance(pointA, worldTransformB.GetPosition())<= volumeB.GetHalfDimensions().Length())
 		{
-			std::cout << "Point to point,Collide point is" << pointA<<  std::endl;
 
 			float p1 = Vector3::Dot(pointA, normal);
 			float p2 = Vector3::Dot(pointB, normal);
 			Vector3 collidePointB = pointA -  normal.Normalised() * (p1 - p2);
 
 			Debug::DrawLine(pointA, collidePointB, Vector4(1, 0, 0, 1), 0.5f);
-
-			std::cout << "Point to point,Collide point is:" << pointA<<" And "<<collidePointB<< std::endl;
+			std::cout << "Point to point,Collide point is" << pointA<<"," <<collidePointB<< std::endl;
+			collisionInfo.AddContactPoint(pointA, collidePointB, normal, Vector3::Distance(pointA,collidePointB));
 			return true;
 	}
 	else
 	{
-			std::cout << "Point to point,Collide point is" << pointB<< std::endl;
-
 			float p1 = Vector3::Dot(pointA, normal);
 			float p2 = Vector3::Dot(pointB, normal);
-
 			Vector3 collidePointA = pointB - normal.Normalised() * (p2 - p1);
-
-			Debug::DrawLine(pointB, collidePointA, Vector4(1, 0, 0, 1), 0.5f);
+			collisionInfo.AddContactPoint(pointB, collidePointA, normal, Vector3::Distance(pointB, collidePointA));
 			return true;
 	}
-
 
 	return false;
 }

@@ -25,7 +25,7 @@ TutorialGame::TutorialGame()
 
 	physics		= new PhysicsSystem(*world);
 
-	grid = new NavigationGrid(2);
+	grid = new NavigationGrid(4);
 
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
@@ -92,12 +92,7 @@ void TutorialGame::UpdateGame(float dt) {
 
 	UpdateKeys();
 
-	if (useGravity) {
-		Debug::Print("(G)ravity on", Vector2(5, 95), Debug::RED);
-	}
-	else {
-		Debug::Print("(G)ravity off", Vector2(5, 95), Debug::RED);
-	}
+
 
 	RayCollision closestCollision;
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::K) && player) {
@@ -210,7 +205,7 @@ void TutorialGame::LockedObjectMovement() {
 			degree = -degree;
 		}
 		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
-		player->GetTransform().Rotate(Vector3(0, - degree,0));
+		player->GetTransform().RotateTo(forward);
 	
 	}
 	
@@ -316,8 +311,8 @@ void TutorialGame::InitWorld() {
 
 	//InitGameExamples();
 	InitDefaultFloor();
-	BuildMaze("TestGrid1.txt");
-	testStateObject = AddStateObjectToWorld(Vector3(2, 0, 2));
+	BuildMaze();
+
 }
 
 /*
@@ -329,7 +324,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	GameObject* floor = new GameObject();
 
 	Vector3 floorSize = Vector3(200, 2, 200);
-	AABBVolume* volume = new AABBVolume(floorSize);
+	OBBVolume* volume = new OBBVolume(floorSize);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
 	floor->GetTransform()
 		.SetScale(floorSize * 2)
@@ -343,6 +338,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 
 	world->AddGameObject(floor);
 
+	floor->SetName("Floor");
 	return floor;
 }
 
@@ -399,7 +395,7 @@ GameObject* TutorialGame::AddBarrierToWorld(const Vector3& position,const Vector
 	
 	GameObject* cube = new GameObject();
 
-	AABBVolume* volume = new AABBVolume(dimensions);
+	OBBVolume * volume = new OBBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 
 	cube->GetTransform().SetPosition(position).SetScale(dimensions * 2);
@@ -534,6 +530,8 @@ StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3
 	character->GetPhysicsObject()->SetInverseMass(inverseMass);
 	character->GetPhysicsObject()->InitSphereInertia();
 
+	character->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+
 	world->AddGameObject(character);
 
 	return character;
@@ -577,14 +575,14 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 		}
 	}
 	*/
-	GameObject* player = AddPlayerToWorld(Vector3(3, 1, 0));
+	GameObject* player = AddPlayerToWorld(Vector3(24, 3, 24));
 	player->SetName("Player");
 
-	GameObject* cube3 = AddOBBCubeToWorld(Vector3(5, 10, 5), cubeDims);
-	cube3->SetName("OBB1");
-	GameObject* cube4 = AddOBBCubeToWorld(Vector3(2, 10, 5), cubeDims);
-	cube4->SetName("OBB2");
+	GameObject* cube = AddOBBCubeToWorld(Vector3(4,10,4), cubeDims);
 
+	StateGameObject* testStateObject = AddStateObjectToWorld(Vector3(4, 0, 4));
+	StateGameObject* testStateObject2 = AddStateObjectToWorld(Vector3(80, 0, 80));
+	StateGameObject* testStateObject3 = AddStateObjectToWorld(Vector3(-40, 0, -40));
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims) {
@@ -659,7 +657,6 @@ line - after the third, they'll be able to twist under torque aswell.
 */
 
 void TutorialGame::MoveSelectedObject() {
-	Debug::Print("Click Force:" + std::to_string(forceMagnitude), Vector2(5, 90));
 	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
 
 	if (!selectionObject) {
@@ -705,24 +702,22 @@ void TutorialGame::BridgeConstraintTest()
 	world -> AddConstraint(constraint);
 }
 
-void TutorialGame::BuildMaze(const std::string& filename)
+void TutorialGame::BuildMaze()
 {
-	const std::string ASSETROOT(ASSETROOTLOCATION);
-	std::ifstream infile(ASSETROOT+ "Data/" + filename);
+	int nodeSize = 2;
+	int gridWidth = 50;
+	int gridHeight = 50;
 
-	int nodeSize, gridWidth, gridHeight;
-
-	infile >> nodeSize;
-	infile >> gridWidth;
-	infile >> gridHeight;
 	//设置游戏场景的基础地形
-	AddBarrierToWorld(Vector3(0, 0, -gridHeight * 10), Vector3(gridWidth, 5, 0.5f));
-	AddBarrierToWorld(Vector3(0, 0, gridHeight * 10), Vector3(gridWidth, 5, 0.5f));
+	AddBarrierToWorld(Vector3(0, 0, -(gridHeight-1) * nodeSize ), Vector3((gridWidth) * nodeSize, 5, 0.5f));
+	AddBarrierToWorld(Vector3(0, 0, (gridHeight ) * nodeSize), Vector3((gridWidth) * nodeSize , 5, 0.5f));
 
 	//这里AABB旋转之后 碰撞体积不对 实现OBB碰撞之后改成OBB
-	AddBarrierToWorld(Vector3(gridWidth / 2, 0, 0), Vector3(gridHeight * 20, 5, 0.5f))->GetTransform().Rotate(Vector3(0, 90, 0));
-	AddBarrierToWorld(Vector3(-gridWidth / 2, 0, 0), Vector3(gridHeight * 20, 5, 0.5f))->GetTransform().Rotate(Vector3(0, 90, 0));
-	
+	AddBarrierToWorld(Vector3((gridWidth ) * nodeSize, 0, 0), Vector3(0.5f, 5, (gridHeight) * nodeSize));
+	AddBarrierToWorld(Vector3(-(gridWidth - 1) * nodeSize, 0, 0), Vector3(0.5f, 5, (gridHeight) * nodeSize));
+
+	AddBarrierToWorld(Vector3(0, 0, 0), Vector3(gridWidth-1, 5, 0.5f));
+	AddBarrierToWorld(Vector3(0, 0, 0), Vector3(0.5f, 5, gridWidth-1 ));
 }
 	
 
