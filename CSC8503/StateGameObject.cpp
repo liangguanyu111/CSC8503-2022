@@ -10,10 +10,10 @@ using namespace CSC8503;
 
 StateGameObject::StateGameObject(NavigationGrid* grid)  {
 
-	counter = 0.0f;
 	stateMachine = new StateMachine();
 
 	this->grid = grid;
+	speed = 0.1f;
 
 	State * stateA = new State([&](float dt) -> void
 	{
@@ -22,7 +22,7 @@ StateGameObject::StateGameObject(NavigationGrid* grid)  {
 	);
 	State * stateB = new State([&](float dt) -> void
 		{
-			
+			std::cout << "状态B" << std::endl;
 		}
 	);
 	
@@ -30,11 +30,24 @@ StateGameObject::StateGameObject(NavigationGrid* grid)  {
 	stateMachine-> AddState(stateB);
 	stateMachine-> AddTransition(new StateTransition(stateA, stateB, [&]()-> bool
 		{
+			Vector3 playerPos = Vector3(player.GetPosition().x, 0, player.GetPosition().z);
+			Vector3 selfPos = Vector3(this->GetTransform().GetPosition().x, 0, this->GetTransform().GetPosition().z);
+			float distance = Vector3::Distance(playerPos, selfPos);
+			if (distance<=20)
+			{
+				speed = 0.2f;
+				return true;
+			}
 			return false;
 		}
 	));
 	stateMachine-> AddTransition(new StateTransition(stateB, stateA,[&]()-> bool
 		{
+			if (Vector3::Distance(player.GetPosition(), this->GetTransform().GetPosition()) >= 30)
+			{
+				speed = 0.1f;
+				return true;
+			}
 			return false;
 		}
 	));
@@ -57,7 +70,7 @@ void StateGameObject::MoveToPos(Vector3 pos)
 		Vector3 direction = (pos - this->transform.GetPosition()).Normalised();
 		direction.y = 0;
 	
-		this->transform.SetPosition(this->transform.GetPosition() + direction/10);
+		this->transform.SetPosition(this->transform.GetPosition() + direction * speed);
 	}
 
 }
@@ -99,16 +112,6 @@ void NCL::CSC8503::StateGameObject::Partorl(float dt)
 
 
 
-void StateGameObject::MoveLeft(float dt) {
-	GetPhysicsObject() -> AddForce({ -100 , 0 , 0 });
-	counter += dt;
-}
-
-void StateGameObject::MoveRight(float dt) {
-	GetPhysicsObject() -> AddForce({ 100 , 0 , 0 });
-	counter -= dt;
-}
-
 void StateGameObject::DisplayPathfinding()
 {
 	vector<Vector3> testNodes;
@@ -122,4 +125,8 @@ void StateGameObject::DisplayPathfinding()
 		Vector3 b = testNodes[i];
 		Debug::DrawLine(a, b, Vector4(0, 1, 0, 1));
 	}
+}
+
+void NCL::CSC8503::StateGameObject::Escape()
+{
 }

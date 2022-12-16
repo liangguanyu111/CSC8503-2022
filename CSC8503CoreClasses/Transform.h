@@ -1,8 +1,8 @@
 #pragma once
 
-using std::vector;
-
 using namespace NCL::Maths;
+
+using std::vector;
 
 namespace NCL {
 	namespace CSC8503 {

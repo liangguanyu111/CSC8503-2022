@@ -531,6 +531,37 @@ StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3
 	character->GetPhysicsObject()->InitSphereInertia();
 
 	character->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+	
+	character->SetPlayer(player->GetTransform());
+
+	world->AddGameObject(character);
+
+	return character;
+}
+
+BehaviourGameObject* NCL::CSC8503::TutorialGame::AddBehaviourGameObjectToWorld(const Vector3 position)
+{
+	float meshSize = 3.0f;
+	float inverseMass = 0.5f;
+
+	BehaviourGameObject* character = new BehaviourGameObject(grid);
+
+	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
+	character->SetBoundingVolume((CollisionVolume*)volume);
+
+	character->GetTransform()
+		.SetScale(Vector3(meshSize, meshSize, meshSize))
+		.SetPosition(position);
+
+	character->SetRenderObject(new RenderObject(&character->GetTransform(), enemyMesh, nullptr, basicShader));
+	character->SetPhysicsObject(new PhysicsObject(&character->GetTransform(), character->GetBoundingVolume()));
+
+	character->GetPhysicsObject()->SetInverseMass(inverseMass);
+	character->GetPhysicsObject()->InitSphereInertia();
+
+	character->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+
+	character->SetPlayer(player->GetTransform());
 
 	world->AddGameObject(character);
 
@@ -583,6 +614,8 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 	StateGameObject* testStateObject = AddStateObjectToWorld(Vector3(4, 0, 4));
 	StateGameObject* testStateObject2 = AddStateObjectToWorld(Vector3(80, 0, 80));
 	StateGameObject* testStateObject3 = AddStateObjectToWorld(Vector3(-40, 0, -40));
+
+	BehaviourGameObject* npc1 = AddBehaviourGameObjectToWorld(Vector3(8, 0, 8));
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims) {

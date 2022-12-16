@@ -8,7 +8,7 @@
 #include "StateGameObject.h"
 #include "NavigationGrid.h"
 #include "NavigationMesh.h"
-
+#include "BehaviourGameObject.h"
 
 namespace NCL {
 	namespace CSC8503 {
@@ -56,7 +56,7 @@ namespace NCL {
 			GameObject* AddEnemyToWorld(const Vector3& position);
 			GameObject* AddBonusToWorld(const Vector3& position);
 			StateGameObject* AddStateObjectToWorld(const Vector3& position);
-
+			BehaviourGameObject* AddBehaviourGameObjectToWorld(const Vector3 position);
 			void BridgeConstraintTest();
 
 			//读取grid文本生成地形
