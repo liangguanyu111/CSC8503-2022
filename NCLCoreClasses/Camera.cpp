@@ -25,7 +25,7 @@ void Camera::UpdateCamera(float dt) {
 		yaw -= 360.0f;
 	}
 	
-	/*
+	
 	double pi = 3.14159265359;
 	forward.z =  -cos(Maths::DegreesToRadians(yaw)) * cos(Maths::DegreesToRadians(pitch));
 	forward.y = sin(Maths::DegreesToRadians(pitch));
@@ -37,7 +37,7 @@ void Camera::UpdateCamera(float dt) {
 	{
 		position = targetPosition - forward * lockOffset.Length();
 	}
-	*/
+	
 	float frameSpeed = 100 * dt;
 	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) {

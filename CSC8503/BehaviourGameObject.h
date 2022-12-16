@@ -21,6 +21,15 @@ namespace NCL {
                 this->player = transfom;
             }
 
+            void OnCollisionBegin(GameObject* otherObject) {
+                if (otherObject->GetName() == "Bonus")
+                {
+                    otherObject->SetActive(false);
+                    MinScore();
+                }
+            }
+
+            int(*MinScore)();
         protected:
 
             void MoveToPos(Vector3 pos);
@@ -33,7 +42,6 @@ namespace NCL {
             Vector3 targetPosition;
             Vector3 nextPos;
             BehaviourSelector* root;
-
             Transform player;
         };
     }

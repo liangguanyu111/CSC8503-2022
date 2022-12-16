@@ -9,7 +9,7 @@
 #include "NavigationGrid.h"
 #include "NavigationMesh.h"
 #include "BehaviourGameObject.h"
-
+#include "Player.h"
 namespace NCL {
 	namespace CSC8503 {
 		class TutorialGame		{
@@ -18,6 +18,11 @@ namespace NCL {
 			~TutorialGame();
 
 			virtual void UpdateGame(float dt);
+
+
+			static void AddScore();
+			static void MinScore();
+
 		protected:
 			void InitialiseAssets();
 
@@ -52,7 +57,7 @@ namespace NCL {
 
 			GameObject* AddOBBCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f);
 
-			GameObject* AddPlayerToWorld(const Vector3& position);
+			Player* AddPlayerToWorld(const Vector3& position);
 			GameObject* AddEnemyToWorld(const Vector3& position);
 			GameObject* AddBonusToWorld(const Vector3& position);
 			StateGameObject* AddStateObjectToWorld(const Vector3& position);
@@ -62,6 +67,7 @@ namespace NCL {
 			//读取grid文本生成地形
 			void BuildMaze();
 
+			void SetReward(float dt);
 	
 #ifdef USEVULKAN
 			GameTechVulkanRenderer*	renderer;
@@ -104,6 +110,9 @@ namespace NCL {
 			}
 
 			GameObject* objClosest = nullptr;
+
+			static int Score;
+			float rewardTimer = 5.0f;
 		};
 	}
 }

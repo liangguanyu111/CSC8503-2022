@@ -18,6 +18,16 @@ namespace NCL {
                 this->player = transfom;
             }
 
+            void OnCollisionBegin(GameObject* otherObject) {
+                if (otherObject->GetName() == "Bonus")
+                {
+                    otherObject->SetActive(false);
+                    AddScore();
+                }
+            }
+
+
+            int(*AddScore)();
         protected:
             void MoveToPos(Vector3 pos);
             //Move to random point on the grid

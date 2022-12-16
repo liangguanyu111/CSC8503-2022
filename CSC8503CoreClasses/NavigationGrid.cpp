@@ -237,6 +237,8 @@ bool NavigationGrid::ReturnSamplePoint(Vector3& pos)
 	return false;
 }
 
+
+
 bool NavigationGrid::NodeInList(GridNode* n, std::vector<GridNode*>& list) const 
 {
 	std::vector<GridNode*>::iterator i = std::find(list.begin(), list.end(), n);

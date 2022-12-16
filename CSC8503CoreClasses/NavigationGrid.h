@@ -10,7 +10,7 @@ namespace NCL {
 			int		  costs[4];
 
 			Vector3		position;
-
+			bool occpuy;
 			float f;
 			float g;
 
@@ -24,6 +24,7 @@ namespace NCL {
 				f = 0;
 				g = 0;
 				type = 0;
+				occpuy = false;
 				parent = nullptr;
 			}
 			~GridNode() {	}

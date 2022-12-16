@@ -6,7 +6,6 @@
 
 #include "PositionConstraint.h"
 #include "OrientationConstraint.h"
-#include "StateGameObject.h"
 
 #include <fstream>
 
@@ -26,6 +25,7 @@ TutorialGame::TutorialGame()
 	physics		= new PhysicsSystem(*world);
 
 	grid = new NavigationGrid(4);
+	Score = 0;
 
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
@@ -124,6 +124,10 @@ void TutorialGame::UpdateGame(float dt) {
 
 	renderer->Render();
 	Debug::UpdateRenderables(dt);
+	SetReward(dt);
+
+
+	Debug::Print("Game Score: "+ std::to_string(Score), Vector2(35, 5), Vector4(1, 0, 0, 1));
 
 }
 
@@ -159,15 +163,8 @@ void TutorialGame::UpdateKeys() {
 		world->ShuffleObjects(false);
 	}
 
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::L))
-	{
-		lockMode =!lockMode;
-	}
+	LockedObjectMovement();
 
-	if (lockMode)
-	{
-		LockedObjectMovement();
-	}
 
 }
 
@@ -205,7 +202,7 @@ void TutorialGame::LockedObjectMovement() {
 			degree = -degree;
 		}
 		player->GetPhysicsObject()->AddForce(forward * walkSpeed);
-		player->GetTransform().RotateTo(forward);
+		player->GetTransform().Rotate(Vector3(0, -degree, 0));
 	
 	}
 	
@@ -312,7 +309,7 @@ void TutorialGame::InitWorld() {
 	//InitGameExamples();
 	InitDefaultFloor();
 	BuildMaze();
-
+	BridgeConstraintTest();
 }
 
 /*
@@ -395,7 +392,7 @@ GameObject* TutorialGame::AddBarrierToWorld(const Vector3& position,const Vector
 	
 	GameObject* cube = new GameObject();
 
-	OBBVolume * volume = new OBBVolume(dimensions);
+	AABBVolume* volume = new AABBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 
 	cube->GetTransform().SetPosition(position).SetScale(dimensions * 2);
@@ -437,11 +434,11 @@ GameObject* TutorialGame::AddOBBCubeToWorld(const Vector3& position, Vector3 dim
 	return cube;
 }
 
-GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
+Player* TutorialGame::AddPlayerToWorld(const Vector3& position) {
 	float meshSize		= 1.0f;
 	float inverseMass	= 0.5f;
 
-	GameObject* character = new GameObject();
+	Player* character = new Player();
 	SphereVolume* volume  = new SphereVolume(1.0f);
 
 	character->SetBoundingVolume((CollisionVolume*)volume);
@@ -458,10 +455,13 @@ GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
 
 	world->AddGameObject(character);
 
+
 	if (player == nullptr)
 	{
 		this->player = character;
 	}
+
+
 
 	return character;
 }
@@ -533,6 +533,7 @@ StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3
 	character->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 	
 	character->SetPlayer(player->GetTransform());
+
 
 	world->AddGameObject(character);
 
@@ -606,7 +607,7 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 		}
 	}
 	*/
-	GameObject* player = AddPlayerToWorld(Vector3(24, 3, 24));
+	Player* player = AddPlayerToWorld(Vector3(24, 1, 24));
 	player->SetName("Player");
 
 	GameObject* cube = AddOBBCubeToWorld(Vector3(4,10,4), cubeDims);
@@ -716,7 +717,7 @@ void TutorialGame::MoveSelectedObject() {
 
 void TutorialGame::BridgeConstraintTest()
 {
-	Vector3 cubeSize = Vector3(8, 8, 8);
+	Vector3 cubeSize = Vector3(2, 2, 2);
 	float invCubeMass = 5; // how heavy the middle pieces are
 	int numLinks = 10;
 	float maxDistance = 30; // constraint distance
@@ -753,4 +754,29 @@ void TutorialGame::BuildMaze()
 	AddBarrierToWorld(Vector3(0, 0, 0), Vector3(0.5f, 5, gridWidth-1 ));
 }
 	
+void TutorialGame::SetReward(float dt)
+{
+	if (rewardTimer > 0)
+	{
+		rewardTimer -= dt;
+		return;
+	}
+	Vector3 pos;
+	grid->ReturnSamplePoint(pos);
+	pos.y = 1;
+	GameObject* Bonus = AddSphereToWorld(pos, 1.0);
+	Bonus->GetRenderObject()->SetColour(Vector4(0.2, 1, 0.2, 1));
+	Bonus->SetName("Bonus");
+	rewardTimer = 1.0f;
+}
+
+void NCL::CSC8503::TutorialGame::AddScore()
+{
+	TutorialGame::Score++;
+}
+
+void NCL::CSC8503::TutorialGame::MinScore()
+{
+	TutorialGame::Score--;
+}
 
