@@ -18,7 +18,7 @@ namespace NCL {
 			{
 							
 				Debug::Print("Your Score is: " + std::to_string(TutorialGame::score), Vector2(30, 50), Vector4(1, 1, 1, 1));
-				if (TutorialGame::score <= 60)
+				if (TutorialGame::score <= 30)
 				{
 					Debug::Print("Sorry,You lose!" + std::to_string(TutorialGame::score), Vector2(30, 45), Vector4(1, 0, 0, 1));
 				}

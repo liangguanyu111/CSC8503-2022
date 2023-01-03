@@ -1,4 +1,5 @@
 GitHub Address : https://github.com/liangguanyu111/CSC8503-2022
+Game Video show the game flow.  
 
 ****Game Introduction****
 	1.In the menu page, you can see option of single game, mutiple game, and game introdction. use up and down key to swap between options,
