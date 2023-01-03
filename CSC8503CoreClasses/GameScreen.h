@@ -5,6 +5,7 @@
 
 #include "Window.h"
 #include "PauseScreen.h"
+#include "GameEnd.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -17,11 +18,20 @@ namespace NCL {
 		{
 			PushdownResult OnUpdate(float dt, PushdownState** newState) override
 			{
-				return PushdownResult::NoChange; 
+				Debug::Print("Time Left: " + std::to_string(TutorialGame::GameTimer), Vector2(30, 10), Vector4(1, 1, 1, 1));
+				Debug::Print("Game Score: "+ std::to_string(TutorialGame::score), Vector2(30, 5), Vector4(1, 1, 1, 1));
+
+				if (TutorialGame::GameTimer < 0)
+				{
+					TutorialGame::game_Start = false;
+					*newState = new GameEnd();
+					return PushdownResult::Push;
+				}
+				return PushdownResult::Keep;
 			}
 			void OnAwake() override
 			{
-				std::cout << "开始游戏" << std::endl;
+				
 			}
 		protected:
 		};

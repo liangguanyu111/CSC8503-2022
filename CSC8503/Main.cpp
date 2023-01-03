@@ -24,7 +24,6 @@
 #include "BehaviourSequence.h"
 #include "BehaviourAction.h"
 
-#include "IntroScreen.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -33,19 +32,26 @@ using namespace CSC8503;
 #include <thread>
 #include <sstream>
 
+void TestNetworking();
 
-
-vector < Vector3 > testNodes;
-PushdownMachine machine(new IntroScreen());
-
-
-void TestPushdownAutomata(Window* w)
-{
-	machine.Update(w->GetTimer()->GetTimeDeltaSeconds());
-}
+class TestPacketReceiver : public PacketReceiver {
+	public:
+	TestPacketReceiver(string name) {
+	this -> name = name;
+	}
+	void ReceivePacket(int type, GamePacket * payload, int source) {
+	if (type == String_Message) {
+	 StringPacket * realPacket = (StringPacket*)payload;
+	
+	 string msg = realPacket -> GetStringFromData();
+	 std::cout << name << "received message:" << msg << std::endl;
+		}
+	}
+	protected:
+	string name;
+};
 
 /*
-
 The main function should look pretty familar to you!
 We make a window, and then go into a while loop that repeatedly
 runs our 'game' until we press escape. Instead of making a 'renderer'
@@ -69,6 +75,7 @@ int main() {
 	TutorialGame* g = new TutorialGame();
 	w->GetTimer()->GetTimeDeltaSeconds(); //Clear the timer so we don't get a larget first dt!
 	//TestPathfinding();
+	TestNetworking();
 
 	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) {
 		float dt = w->GetTimer()->GetTimeDeltaSeconds();
@@ -90,9 +97,33 @@ int main() {
 		w->SetTitle("Gametech frame time:" + std::to_string(1000.0f * dt));
 
 		g->UpdateGame(dt);
-		TestPushdownAutomata(w);
 	    //DisplayPathfinding();
 	}
 	Window::DestroyGameWindow();
 }
  
+
+void TestNetworking() {
+	NetworkBase::Initialise();
+	TestPacketReceiver serverReceiver("Server");
+	TestPacketReceiver clientReceiver("Client");
+	int port = NetworkBase::GetDefaultPort();
+	GameServer* server = new GameServer(port, 1);
+	GameClient* client = new GameClient();
+	server -> RegisterPacketHandler(String_Message, &serverReceiver);
+	client -> RegisterPacketHandler(String_Message, &clientReceiver);
+	bool canConnect = client -> Connect(127, 0, 0, 1, port);
+
+	for (int i = 0; i < 100; ++i) 
+	{
+		StringPacket serverPacket("Server says hello!" + std::to_string(i));
+		StringPacket clientPacket(StringPacket("Client says hello!" + std::to_string(i)));
+		server -> SendGlobalPacket(serverPacket);
+		client -> SendPacket(clientPacket);
+
+		server -> UpdateServer();
+		client -> UpdateClient();
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+	NetworkBase::Destroy();
+}

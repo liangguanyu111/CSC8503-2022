@@ -5,13 +5,17 @@
 #endif
 #include "PhysicsSystem.h"
 
-#include "StateGameObject.h"
 #include "NavigationGrid.h"
 #include "NavigationMesh.h"
-#include "BehaviourGameObject.h"
-#include "Player.h"
+
+
 namespace NCL {
 	namespace CSC8503 {
+		class Player;
+		class PushdownMachine;
+		class StateBarrier;
+		class BehaviourGameObject;
+		class StateGameObject;
 		class TutorialGame		{
 		public:
 			TutorialGame();
@@ -19,10 +23,10 @@ namespace NCL {
 
 			virtual void UpdateGame(float dt);
 
-
-			static void AddScore();
-			static void MinScore();
-
+			//Game State
+			static int score;
+			static bool game_Start;
+			static float GameTimer; // 3 min for first level;
 		protected:
 			void InitialiseAssets();
 
@@ -51,23 +55,30 @@ namespace NCL {
 
 			GameObject* AddFloorToWorld(const Vector3& position);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f);
+			GameObject* AddCapsuleToWorld(const Vector3& position, float size, float radius, float height);
+
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f);
 
 			GameObject* AddBarrierToWorld(const Vector3& position, const Vector3& dimensions);
 
 			GameObject* AddOBBCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f);
 
+
 			Player* AddPlayerToWorld(const Vector3& position);
 			GameObject* AddEnemyToWorld(const Vector3& position);
 			GameObject* AddBonusToWorld(const Vector3& position);
 			StateGameObject* AddStateObjectToWorld(const Vector3& position);
 			BehaviourGameObject* AddBehaviourGameObjectToWorld(const Vector3 position);
+			StateBarrier* AddStateBarrierToWorld(const Vector3& position, const Vector3& dimensions);
+
 			void BridgeConstraintTest();
 
 			//读取grid文本生成地形
 			void BuildMaze();
 
 			void SetReward(float dt);
+
+			void GameFlow();
 	
 #ifdef USEVULKAN
 			GameTechVulkanRenderer*	renderer;
@@ -111,8 +122,14 @@ namespace NCL {
 
 			GameObject* objClosest = nullptr;
 
-			static int Score;
 			float rewardTimer = 5.0f;
+		
+
+			//PushdownMachine to achieve the menu
+			PushdownMachine* machine = nullptr;
+
+			StateBarrier* barrier1;
+			StateBarrier* barrier2;
 		};
 	}
 }

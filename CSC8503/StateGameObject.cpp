@@ -4,7 +4,7 @@
 #include "State.h"
 #include "PhysicsObject.h"
 #include "Debug.h"
-
+#include "GameWorld.h"
 using namespace NCL;
 using namespace CSC8503;
 
@@ -22,7 +22,7 @@ StateGameObject::StateGameObject(NavigationGrid* grid)  {
 	);
 	State * stateB = new State([&](float dt) -> void
 		{
-			std::cout << "状态B" << std::endl;
+			
 		}
 	);
 	
@@ -59,7 +59,9 @@ StateGameObject::~StateGameObject() {
 
 void StateGameObject::Update(float dt) {
 	stateMachine -> Update(dt);
+	RayDetect();
 }
+
 
 
 
@@ -81,6 +83,7 @@ void NCL::CSC8503::StateGameObject::Partorl(float dt)
 	if (!init)
 	{
 		init = true;
+		initPos = transform.GetPosition();
 		targetPosition = tempPos;
 		nextPos = tempPos;
 	}
@@ -129,4 +132,36 @@ void StateGameObject::DisplayPathfinding()
 
 void NCL::CSC8503::StateGameObject::Escape()
 {
+
+}
+
+void NCL::CSC8503::StateGameObject::ReSpawn()
+{
+	transform.SetPosition(initPos);
+}
+
+void NCL::CSC8503::StateGameObject::RayDetect()
+{
+	RayCollision closestCollision;
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::K)) {
+		Vector3 rayPos;
+		Vector3 rayDir;
+
+		rayDir = GetTransform().GetOrientation() * Vector3(0, 0, -1);
+
+		rayPos = GetTransform().GetPosition();
+
+		Ray r = Ray(rayPos, rayDir);
+
+		if (GameWorld->Raycast(r, closestCollision, true, this)) {
+			GameObject* objClosest = (GameObject*)closestCollision.node;
+			std::cout << this->name << " detected " << objClosest->GetName() << " in front of it." << std::endl;
+			if (objClosest->GetLayer()== Obstcale)
+			{
+				ReSpawn();
+			}
+			delete objClosest;
+		}
+	}
+
 }

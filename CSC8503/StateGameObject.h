@@ -2,8 +2,10 @@
 #include "GameObject.h"
 #include "NavigationGrid.h"
 #include "NavigationMesh.h"
+#include "TutorialGame.h"
 
-namespace NCL {
+namespace NCL 
+{
     namespace CSC8503 {
         class StateMachine;
         class StateGameObject : public GameObject  {
@@ -18,16 +20,18 @@ namespace NCL {
                 this->player = transfom;
             }
 
-            void OnCollisionBegin(GameObject* otherObject) {
+            void OnCollisionBegin(GameObject* otherObject) 
+            {
                 if (otherObject->GetName() == "Bonus")
                 {
+                    TutorialGame::score++;
                     otherObject->SetActive(false);
-                    AddScore();
+              
                 }
             }
 
+            GameWorld* GameWorld;
 
-            int(*AddScore)();
         protected:
             void MoveToPos(Vector3 pos);
             //Move to random point on the grid
@@ -35,6 +39,10 @@ namespace NCL {
             void DisplayPathfinding();
             //When the character is close to the player, they should run to oppsite direction.
             void Escape();
+
+            void AvoidObstacle();
+            void ReSpawn();
+            void RayDetect(); //print the information of object in front of this gameObject
 
             StateMachine* stateMachine;
 
@@ -44,9 +52,11 @@ namespace NCL {
             NavigationPath currentPath;
             Vector3 targetPosition;
             Vector3 nextPos;
+            Vector3 initPos;
             bool init = false;
             
             Transform player;
+
         };
     }
 }

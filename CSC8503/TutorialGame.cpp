@@ -6,13 +6,24 @@
 
 #include "PositionConstraint.h"
 #include "OrientationConstraint.h"
-
 #include <fstream>
 
+
+#include "PushdownMachine.h"
+#include "PushdownState.h"
+#include "IntroScreen.h"
+#include "GameScreen.h"
+#include "Player.h"
+#include "StateBarrier.h"
+#include "BehaviourGameObject.h"
+#include "StateGameObject.h"
 
 using namespace NCL;
 using namespace CSC8503;
 
+int TutorialGame::score = 0;
+bool TutorialGame::game_Start = false;
+float TutorialGame::GameTimer=180.0f;
 TutorialGame::TutorialGame()
 {
 	world		= new GameWorld();
@@ -23,13 +34,13 @@ TutorialGame::TutorialGame()
 #endif
 
 	physics		= new PhysicsSystem(*world);
+	machine = new PushdownMachine(new IntroScreen());
 
 	grid = new NavigationGrid(4);
-	Score = 0;
-
 	forceMagnitude	= 10.0f;
-	useGravity		= false;
+	useGravity		= true;
 	inSelectionMode = false;
+
 
 	InitialiseAssets();
 }
@@ -71,64 +82,73 @@ TutorialGame::~TutorialGame()	{
 	delete world;
 
 	delete grid;
+	delete machine;
+
+	delete barrier1;
+	delete barrier2;
 }
 
 void TutorialGame::UpdateGame(float dt) {
-	if (!inSelectionMode) {
-		world->GetMainCamera()->UpdateCamera(dt);
-	}
-	if (player != nullptr) {
-		Vector3 objPos = player->GetTransform().GetPosition();
-		Vector3 camPos = objPos + lockedOffset;
 
-		Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0,1,0));
-
-		Matrix4 modelMat = temp.Inverse();
-
-		Quaternion q(modelMat);
-		Vector3 angles = q.ToEuler(); //nearly there now!
-		world->GetMainCamera()->SetTargetPosition(objPos);
-	}
-
-	UpdateKeys();
-
-
-
-	RayCollision closestCollision;
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::K) && player) {
-		Vector3 rayPos;
-		Vector3 rayDir;
-
-		rayDir = player->GetTransform().GetOrientation() * Vector3(0, 0, -1);
-
-		rayPos = player->GetTransform().GetPosition();
-
-		Ray r = Ray(rayPos, rayDir);
-
-		if (world->Raycast(r, closestCollision, true, player)) {
-			if (objClosest) {
-				objClosest->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-			}
-			objClosest = (GameObject*)closestCollision.node;
-
-			objClosest->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
-		}
-	}
-
-	SelectObject();
-	MoveSelectedObject();
-
-	world->UpdateWorld(dt);
-	renderer->Update(dt);
-	physics->Update(dt);
-
+	machine->Update(dt);
 	renderer->Render();
 	Debug::UpdateRenderables(dt);
-	SetReward(dt);
+	if (game_Start)
+	{
+
+		if (!inSelectionMode) {
+			world->GetMainCamera()->UpdateCamera(dt);
+		}
+		if (player != nullptr) {
+			Vector3 objPos = player->GetTransform().GetPosition();
+			Vector3 camPos = objPos + lockedOffset;
+
+			Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
+
+			Matrix4 modelMat = temp.Inverse();
+
+			Quaternion q(modelMat);
+			Vector3 angles = q.ToEuler(); //nearly there now!
+			world->GetMainCamera()->SetTargetPosition(objPos);
+		}
+
+		UpdateKeys();
 
 
-	Debug::Print("Game Score: "+ std::to_string(Score), Vector2(35, 5), Vector4(1, 0, 0, 1));
+		RayCollision closestCollision;
+		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::K) && player) {
+			Vector3 rayPos;
+			Vector3 rayDir;
 
+			rayDir = player->GetTransform().GetOrientation() * Vector3(0, 0, -1);
+
+			rayPos = player->GetTransform().GetPosition();
+
+			Ray r = Ray(rayPos, rayDir);
+
+			if (world->Raycast(r, closestCollision, true, player)) {
+				if (objClosest) {
+					objClosest->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+				}
+				objClosest = (GameObject*)closestCollision.node;
+
+				objClosest->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
+			}
+		}
+
+		SelectObject();
+		MoveSelectedObject();
+
+		world->UpdateWorld(dt);
+		physics->Update(dt);
+
+		SetReward(dt);
+		GameFlow();
+
+		TutorialGame::GameTimer -= dt;
+	}
+
+	
 }
 
 void TutorialGame::UpdateKeys() {
@@ -321,7 +341,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	GameObject* floor = new GameObject();
 
 	Vector3 floorSize = Vector3(200, 2, 200);
-	OBBVolume* volume = new OBBVolume(floorSize);
+	AABBVolume* volume = new AABBVolume(floorSize);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
 	floor->GetTransform()
 		.SetScale(floorSize * 2)
@@ -338,6 +358,32 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	floor->SetName("Floor");
 	return floor;
 }
+
+
+GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float size, float radius, float height)
+{
+	GameObject* capsule = new GameObject();
+
+	Vector3 sphereSize = Vector3(size, size, size);
+	CapsuleVolume* volume = new CapsuleVolume(radius,height);
+	capsule->SetBoundingVolume((CollisionVolume*)volume);
+
+	capsule->GetTransform()
+		.SetScale(sphereSize)
+		.SetPosition(position);
+
+
+	capsule->SetRenderObject(new RenderObject(&capsule->GetTransform(),capsuleMesh, basicTex, basicShader));
+	capsule->SetPhysicsObject(new PhysicsObject(&capsule->GetTransform(), capsule->GetBoundingVolume()));
+
+	capsule->GetPhysicsObject()->SetInverseMass(1.0f);
+	capsule->GetPhysicsObject()->InitSphereInertia();
+
+	world->AddGameObject(capsule);
+
+	return capsule;
+}
+
 
 /*
 
@@ -569,6 +615,30 @@ BehaviourGameObject* NCL::CSC8503::TutorialGame::AddBehaviourGameObjectToWorld(c
 	return character;
 }
 
+StateBarrier* NCL::CSC8503::TutorialGame::AddStateBarrierToWorld(const Vector3& position, const Vector3& dimensions)
+{
+
+	StateBarrier* cube = new StateBarrier();
+
+	AABBVolume* volume = new AABBVolume(dimensions);
+	cube->SetBoundingVolume((CollisionVolume*)volume);
+
+	cube->GetTransform().SetPosition(position).SetScale(dimensions * 2);
+
+	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+
+	cube->GetPhysicsObject()->SetInverseMass(0);
+	cube->GetPhysicsObject()->InitCubeInertia();
+
+	cube->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+
+	cube->SetLayer(Obstcale);
+
+	world->AddGameObject(cube);
+	return cube;
+}
+
 void TutorialGame::InitDefaultFloor() {
 	AddFloorToWorld(Vector3(0, -2, 0));
 }
@@ -610,13 +680,20 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 	Player* player = AddPlayerToWorld(Vector3(24, 1, 24));
 	player->SetName("Player");
 
-	GameObject* cube = AddOBBCubeToWorld(Vector3(4,10,4), cubeDims);
+	GameObject* cube = AddCubeToWorld(Vector3(4,0.5,4), cubeDims);
+	GameObject* sphere = AddSphereToWorld(Vector3(2, 10, 2), 1.0f);
+	GameObject* capsule = AddCapsuleToWorld(Vector3(6, 10, 6), 1.0f, 1.0f, 1.0f);
 
-	StateGameObject* testStateObject = AddStateObjectToWorld(Vector3(4, 0, 4));
-	StateGameObject* testStateObject2 = AddStateObjectToWorld(Vector3(80, 0, 80));
-	StateGameObject* testStateObject3 = AddStateObjectToWorld(Vector3(-40, 0, -40));
+	StateGameObject* testStateObject = AddStateObjectToWorld(Vector3(4, 0.5f, 4));
+	testStateObject->GameWorld = world;
+	StateGameObject* testStateObject2 = AddStateObjectToWorld(Vector3(80, 0.5f, 80));
+	testStateObject2->GameWorld = world;
+	StateGameObject* testStateObject3 = AddStateObjectToWorld(Vector3(-40, 0.5f, -40));
+	testStateObject3->GameWorld = world;
 
 	BehaviourGameObject* npc1 = AddBehaviourGameObjectToWorld(Vector3(8, 0, 8));
+
+
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims) {
@@ -750,8 +827,8 @@ void TutorialGame::BuildMaze()
 	AddBarrierToWorld(Vector3((gridWidth ) * nodeSize, 0, 0), Vector3(0.5f, 5, (gridHeight) * nodeSize));
 	AddBarrierToWorld(Vector3(-(gridWidth - 1) * nodeSize, 0, 0), Vector3(0.5f, 5, (gridHeight) * nodeSize));
 
-	AddBarrierToWorld(Vector3(0, 0, 0), Vector3(gridWidth-1, 5, 0.5f));
-	AddBarrierToWorld(Vector3(0, 0, 0), Vector3(0.5f, 5, gridWidth-1 ));
+	barrier1 = AddStateBarrierToWorld(Vector3(0, 0, 0), Vector3(gridWidth-1, 5, 0.5f));
+	barrier2 = AddStateBarrierToWorld(Vector3(0, 0, 0), Vector3(0.5f, 5, gridWidth-1 ));
 }
 	
 void TutorialGame::SetReward(float dt)
@@ -770,13 +847,13 @@ void TutorialGame::SetReward(float dt)
 	rewardTimer = 1.0f;
 }
 
-void NCL::CSC8503::TutorialGame::AddScore()
+void TutorialGame::GameFlow()
 {
-	TutorialGame::Score++;
+	if (TutorialGame::score >= 15&&!barrier1->active)
+	{
+		barrier1->ActiveBarrier(Vector3(50,0,0),Vector3(-50,0,0));
+		barrier2->ActiveBarrier(Vector3(0, 0, -50), Vector3(0, 0, 50));
+	}
 }
 
-void NCL::CSC8503::TutorialGame::MinScore()
-{
-	TutorialGame::Score--;
-}
 

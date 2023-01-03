@@ -4,6 +4,7 @@
 #include "BehaviourSelector.h"
 #include"BehaviourSequence.h"
 #include "NavigationGrid.h"
+#include"TutorialGame.h"
 
 namespace NCL {
     namespace CSC8503 {
@@ -24,12 +25,12 @@ namespace NCL {
             void OnCollisionBegin(GameObject* otherObject) {
                 if (otherObject->GetName() == "Bonus")
                 {
+                    TutorialGame::score--;
                     otherObject->SetActive(false);
-                    MinScore();
-                }
-            }
 
-            int(*MinScore)();
+                }
+          }
+
         protected:
 
             void MoveToPos(Vector3 pos);

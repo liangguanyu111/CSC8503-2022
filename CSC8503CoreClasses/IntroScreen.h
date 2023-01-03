@@ -3,10 +3,10 @@
 #include "PushdownState.h"
 #include "GameScreen.h"
 #include "Window.h"
+#include "GameInstruction.h"
 
 using namespace NCL;
 using namespace CSC8503;
-
 using namespace NCL::CSC8503;
 
 namespace NCL {
@@ -14,7 +14,7 @@ namespace NCL {
 		class IntroScreen : public PushdownState
 		{
 		private:
-			int state ;
+			int state;
 		public:
 			PushdownResult OnUpdate(float dt,PushdownState** newState) override {
 
@@ -23,12 +23,12 @@ namespace NCL {
 
 				if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::UP))
 				{
-					state = state - 1 >0?state-1:2;
+					state = state - 1 >0?state-1:3;
 				}
 
 				if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::DOWN))
 				{
-					state = state +1 <= 2 ? state + 1 : 1;
+					state = state +1 <= 3 ? state + 1 : 1;
 				}
 
 				switch (state)
@@ -36,22 +36,37 @@ namespace NCL {
 				case 1:
 					Debug::Print("Start Single Game", Vector2(10, 50),Vector4(1,0,0,1));
 					Debug::Print("Start Mutiple Game", Vector2(10, 55));
+					Debug::Print("Game Instroduction", Vector2(10, 60));
 					break;
 				case 2:
 					Debug::Print("Start Single Game", Vector2(10, 50));
 					Debug::Print("Start Mutiple Game", Vector2(10, 55), Vector4(1, 0, 0, 1));
+					Debug::Print("Game Instroduction", Vector2(10, 60));
+					break;
+				case 3:
+					Debug::Print("Start Single Game", Vector2(10, 50));
+					Debug::Print("Start Mutiple Game", Vector2(10, 55));
+					Debug::Print("Game Instroduction", Vector2(10, 60),Vector4(1, 0, 0, 1));
 					break;
 				case 0:
 					Debug::Print("Start Single Game", Vector2(10, 50));
 					Debug::Print("Start Mutiple Game", Vector2(10, 55));
+					Debug::Print("Game Instroduction", Vector2(10, 60));
 					break;
 				}
 
- 				if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE))
+ 				if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT))
 				{
 					if (state == 1 || state == 2)
 					{
+						//Game Start
+						TutorialGame::game_Start = true;
 						*newState = new GameScreen();
+						return PushdownResult::Push;
+					}
+					if (state == 3)
+					{
+						*newState = new GameInstruction();
 						return PushdownResult::Push;
 					}
 				}

@@ -296,9 +296,10 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 
 	float cRestitution = 0.66f * ((physA->Getelasticity() + physB->Getelasticity()) / 2);
 	
-	physA->AddForceAtPosition(-p.normal * force * cRestitution, p.localA);
-	physB->AddForceAtPosition(p.normal * force * cRestitution, p.localB);
+	physA->AddForce(-p.normal * force * cRestitution);
+	physB->AddForce(p.normal * force * cRestitution);
 	
+	//AddForcePosition here?
 }
 /*
 

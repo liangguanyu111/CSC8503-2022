@@ -309,6 +309,36 @@ bool CollisionDetection::AABBSphereIntersection(const AABBVolume& volumeA, const
 
 bool  CollisionDetection::OBBSphereIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
 	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+
+	Matrix4 inverse = worldTransformA.GetOrientation();
+	inverse.Inverse();
+
+	Transform newTransfromA = worldTransformA;
+	newTransfromA.SetOrientation(inverse);
+
+	Transform newTransfromB = worldTransformB;
+	newTransfromB.SetOrientation(inverse);
+
+	Vector3 boxSize = volumeA.GetHalfDimensions();
+	Vector3 delta = newTransfromB.GetPosition() - newTransfromA.GetPosition();
+	Vector3 closestPointOnBox = Maths::Clamp(delta, -boxSize, boxSize);
+
+	Vector3 localPoint = delta - closestPointOnBox;
+	float distance = localPoint.Length();
+	if (distance < volumeB.GetRadius())
+	{	// yes , we ’re colliding !
+		Vector3 collisionNormal = localPoint.Normalised();
+		float penetration = (volumeB.GetRadius() - distance);
+		Vector3 localA = Vector3();
+		Vector3 localB = -collisionNormal * volumeB.GetRadius();
+
+		Vector3 collideA = worldTransformA.GetOrientation() * localA;
+		Vector3 collideB = worldTransformA.GetOrientation() * localB;
+
+		collisionInfo.AddContactPoint(collideA, collideB,  collisionNormal, penetration);
+		return true;
+	}
+
 	return false;
 }
 
@@ -321,7 +351,34 @@ bool CollisionDetection::AABBCapsuleIntersection(
 bool CollisionDetection::SphereCapsuleIntersection(
 	const CapsuleVolume& volumeA, const Transform& worldTransformA,
 	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
-	return false;
+	
+	//Convert it to SphererIntersection
+
+	float capsuleRaidus = volumeA.GetRadius();
+	float capsulsHeight = volumeA.GetHalfHeight();
+
+	float sphereRaidus = volumeB.GetRadius();
+
+	SphereVolume sphereOfCapsule(capsuleRaidus);
+
+	Vector3 offset = worldTransformA.GetPosition() - worldTransformB.GetPosition();
+	
+	if (abs(offset.x) > capsuleRaidus || abs(offset.y) > capsulsHeight || abs(offset.z)> capsuleRaidus)
+	{
+		return false;
+	}
+
+	Transform sphereOfCapsuleTransfrom = worldTransformA;
+	Vector3 capsulePos = worldTransformA.GetPosition() ;
+
+	Matrix4 inverse = worldTransformA.GetOrientation();
+	inverse.Inverse();
+
+	capsulePos = inverse * capsulePos;
+
+	sphereOfCapsuleTransfrom.SetPosition(Vector3(capsulePos.x,worldTransformB.GetPosition().y,capsulePos.z));
+
+	return SphereIntersection(sphereOfCapsule, sphereOfCapsuleTransfrom, volumeB, worldTransformB, collisionInfo);
 }
 
 

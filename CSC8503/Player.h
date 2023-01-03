@@ -1,4 +1,5 @@
 #pragma once
+
 #include"TutorialGame.h"
 #include"GameObject.h"
 
@@ -15,14 +16,13 @@ namespace NCL
 
             void Update(float dt);
 
-            void OnCollisionBegin(GameObject* otherObject) {
+            inline void OnCollisionBegin(GameObject* otherObject) {
                 if (otherObject->GetName() == "Bonus")
                 {
                     otherObject->SetActive(false);
-                    NCL::CSC8503::TutorialGame::AddScore();
+                    TutorialGame::score++;
                 }
             }
-
         };
     }
 }

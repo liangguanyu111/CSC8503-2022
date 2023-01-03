@@ -38,6 +38,7 @@ void Camera::UpdateCamera(float dt) {
 		position = targetPosition - forward * lockOffset.Length();
 	}
 	
+	
 	float frameSpeed = 100 * dt;
 	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) {

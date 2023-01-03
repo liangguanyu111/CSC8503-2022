@@ -81,17 +81,19 @@ void NetworkedGame::UpdateAsServer(float dt) {
 	else {
 		BroadcastSnapshot(true);
 	}
+	thisServer->UpdateServer();
 }
 
 void NetworkedGame::UpdateAsClient(float dt) {
-	ClientPacket newPacket;
 
+	ClientPacket newPacket;
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::SPACE)) {
 		//fire button pressed!
 		newPacket.buttonstates[0] = 1;
 		newPacket.lastID = 0; //You'll need to work this out somehow...
 	}
 	thisClient->SendPacket(newPacket);
+	thisClient->UpdateClient();
 }
 
 void NetworkedGame::BroadcastSnapshot(bool deltaFrame) {
