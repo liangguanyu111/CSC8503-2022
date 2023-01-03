@@ -682,7 +682,10 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 
 	GameObject* cube = AddCubeToWorld(Vector3(4,0.5,4), cubeDims);
 	GameObject* sphere = AddSphereToWorld(Vector3(2, 10, 2), 1.0f);
+	GameObject* sphere2 = AddSphereToWorld(Vector3(2, 13, 2), 1.0f);
 	GameObject* capsule = AddCapsuleToWorld(Vector3(6, 10, 6), 1.0f, 1.0f, 1.0f);
+	GameObject* ObbCube1 = AddOBBCubeToWorld(Vector3(5, 15, 5),cubeDims);
+	GameObject* ObbCube2 = AddOBBCubeToWorld(Vector3(8, 15, 8), cubeDims);
 
 	StateGameObject* testStateObject = AddStateObjectToWorld(Vector3(4, 0.5f, 4));
 	testStateObject->GameWorld = world;
@@ -692,7 +695,6 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 	testStateObject3->GameWorld = world;
 
 	BehaviourGameObject* npc1 = AddBehaviourGameObjectToWorld(Vector3(8, 0, 8));
-
 
 }
 

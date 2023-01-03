@@ -33,6 +33,7 @@ namespace NCL {
 			farPlane	= 100.0f;
 			forward = Vector3(0, 0, -1);
 			camType		= CameraType::Perspective;
+			lock = true;
 		};
 
 		Camera(float pitch, float yaw, const Vector3& position) : Camera() {
@@ -125,5 +126,6 @@ namespace NCL {
 
 		Vector3 targetPosition;
 		Vector3 lockOffset;
+		bool lock;
 	};
 }

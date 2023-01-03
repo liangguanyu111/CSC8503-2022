@@ -25,18 +25,27 @@ void Camera::UpdateCamera(float dt) {
 		yaw -= 360.0f;
 	}
 	
-	
-	double pi = 3.14159265359;
-	forward.z =  -cos(Maths::DegreesToRadians(yaw)) * cos(Maths::DegreesToRadians(pitch));
-	forward.y = sin(Maths::DegreesToRadians(pitch));
-	forward.x =  -sin(Maths::DegreesToRadians(yaw)) * cos(Maths::DegreesToRadians(pitch));
-	forward = forward.Normalised();
-	
-
-	if (targetPosition!=Vector3(0,0,0))
+	if(Window::GetKeyboard()->KeyPressed(KeyboardKeys::P))
 	{
-		position = targetPosition - forward * lockOffset.Length();
+		lock = !lock;
 	}
+
+	if (lock)
+	{
+		double pi = 3.14159265359;
+		forward.z = -cos(Maths::DegreesToRadians(yaw)) * cos(Maths::DegreesToRadians(pitch));
+		forward.y = sin(Maths::DegreesToRadians(pitch));
+		forward.x = -sin(Maths::DegreesToRadians(yaw)) * cos(Maths::DegreesToRadians(pitch));
+		forward = forward.Normalised();
+
+
+		if (targetPosition != Vector3(0, 0, 0))
+		{
+			position = targetPosition - forward * lockOffset.Length();
+		}
+	}
+
+	
 	
 	
 	float frameSpeed = 100 * dt;
